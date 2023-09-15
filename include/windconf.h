@@ -24,9 +24,9 @@
 #define SYSCF                /* Use a global configuration */
 #define SYSCF_FILE "sysconf" /* Use a file to hold the SYSCF configuration */
 
-#define DUMPLOG      /* Enable dumplog files */
-/*#define DUMPLOG_FILE "nethack-%n-%d.log"*/
-#define DUMPLOG_MSG_COUNT 50
+#ifdef DUMPLOG
+#define DUMPLOG_FILE "%TEMP%/nethack-%n-%d.log"
+#endif
 
 /*#define CHANGE_COLOR*/ /* allow palette changes */
 
@@ -92,10 +92,7 @@
 #define INTERJECTION_TYPES (INTERJECT_PANIC + 1)
 extern void interject_assistance(int, int, genericptr_t, genericptr_t);
 extern void interject(int);
-
-#if defined(SND_LIB_WINDSOUND)
-#define SND_SOUNDEFFECTS_AUTOMAP
-#endif
+extern char *windows_exepath(void);
 
 /*
  *===============================================
@@ -123,7 +120,7 @@ extern errno_t tmpfile_s(FILE * restrict * restrict streamptr);
 #define __USE_MINGW_ANSI_STDIO 1
 #endif
 /* extern int getlock(void); */
-#endif
+#endif   /* __MINGW32__ */
 
 #ifdef _MSC_VER
 #define MD_USE_TMPFILE_S
@@ -295,7 +292,7 @@ ATTRNORETURN extern void nethack_exit(int) NORETURN;
 extern boolean file_exists(const char *);
 extern boolean file_newer(const char *, const char *);
 #ifndef SYSTEM_H
-#include "system.h"
+/* #include "system.h" */
 #endif
 
 /* Override the default version of nhassert.  The default version is unable

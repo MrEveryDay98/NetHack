@@ -57,6 +57,7 @@ end
 function hell_tweaks(protected_area)
    local liquid = "L";
    local ground = ".";
+   local n_prot = protected_area:numpoints();
    local prot = protected_area:negate();
 
    -- random pools
@@ -82,25 +83,59 @@ function hell_tweaks(protected_area)
 
    -- river
    if (percent(50)) then
-      local floor = selection.match(ground);
-      local a = selection.rndcoord(floor);
-      local b = selection.rndcoord(floor);
-      local lavariver = selection.randline(selection.new(), a.x, a.y, b.x, b.y, 10);
+      local allrivers = selection.new();
+      local reqpts = ((nhc.COLNO * nhc.ROWNO) - n_prot) / 12; -- # of lava pools required
+      local rpts = 0;
+      local rivertries = 0;
 
-      if (percent(50)) then
-         lavariver = selection.grow(lavariver, "north");
-      end
-      if (percent(50)) then
-         lavariver = selection.grow(lavariver, "west");
-      end
-      if (percent(25)) then
-         local riverbanks = selection.grow(lavariver);
+      repeat
+            local floor = selection.match(ground);
+            local a = selection.rndcoord(floor);
+            local b = selection.rndcoord(floor);
+            local lavariver = selection.randline(selection.new(), a.x, a.y, b.x, b.y, 10);
+
+            if (percent(50)) then
+               lavariver = selection.grow(lavariver, "north");
+            end
+            if (percent(50)) then
+               lavariver = selection.grow(lavariver, "west");
+            end
+            allrivers = allrivers | lavariver;
+            allrivers = allrivers & prot;
+
+            rpts = allrivers:numpoints();
+            rivertries = rivertries + 1;
+      until ((rpts > reqpts) or (rivertries > 7));
+
+      if (percent(60)) then
+         local prc = 10 * math.random(1, 6);
+         local riverbanks = selection.grow(allrivers);
          riverbanks = riverbanks & prot;
-         des.terrain(selection.percentage(riverbanks, 50), ground);
+         des.terrain(selection.percentage(riverbanks, prc), ground);
       end
-      lavariver = lavariver & prot;
-      des.terrain(lavariver, liquid);
+
+      des.terrain(allrivers, liquid);
    end
+
+   -- replacing some walls with boulders
+   if (percent(20)) then
+      local amount = 3 * math.random(1, 8);
+      local bwalls = selection.match([[.w.]]):percentage(amount) | selection.match(".\nw\n."):percentage(amount);
+      bwalls = bwalls & prot;
+      bwalls:iterate(function (x,y)
+            des.terrain(x, y, ".");
+            des.object("boulder", x, y);
+      end);
+   end
+
+   -- replacing some walls with iron bars
+   if (percent(20)) then
+      local amount = 3 * math.random(1, 8);
+      local fwalls = selection.match([[.w.]]):percentage(amount) | selection.match(".\nw\n."):percentage(amount);
+      fwalls = fwalls:grow() & selection.match("w") & prot;
+      des.terrain(fwalls, "F");
+   end
+
 end
 
 -- pline with variable number of arguments
@@ -138,4 +173,70 @@ function table_stringify(tbl)
    end
    -- pline("table_stringify:(%s)", str);
    return "{" .. str .. "}";
+end
+
+--
+-- TUTORIAL
+--
+
+-- extended commands NOT available in tutorial
+local tutorial_blacklist_commands = {
+   ["save"] = true,
+};
+
+function tutorial_cmd_before(cmd)
+   -- nh.pline("TUT:cmd_before:" .. cmd);
+
+   if (tutorial_blacklist_commands[cmd]) then
+      return false;
+   end
+   return true;
+end
+
+function tutorial_enter()
+   -- nh.pline("TUT:enter");
+
+   -- add the tutorial branch callbacks
+   nh.callback("cmd_before", "tutorial_cmd_before");
+   nh.callback("end_turn", "tutorial_turn");
+
+   -- save state for later restore
+   nh.gamestate();
+end
+
+function tutorial_leave()
+   -- nh.pline("TUT:leave");
+
+   -- remove the tutorial branch callbacks
+   nh.callback("cmd_before", "tutorial_cmd_before", true);
+   nh.callback("end_turn", "tutorial_turn", true);
+
+   -- restore state for regular play
+   nh.gamestate(true);
+end
+
+local tutorial_events = {
+   {
+      func = function()
+         if (u.uhunger < 148) then
+            local o = obj.new("blessed food ration");
+            o:placeobj(u.ux, u.uy);
+            nh.pline("Looks like you're getting hungry.  You'll starve to death, unless you eat something.", true);
+            nh.pline("Comestibles are eaten with '" .. nh.eckey("eat") .. "'", true);
+            return true;
+         end
+      end
+   },
+};
+
+function tutorial_turn()
+   for k, v in pairs(tutorial_events) do
+      if ((v.ucoord and u.ux == v.ucoord[1] + 3 and u.uy == v.ucoord[2] + 3)
+         or (v.ucoord == nil)) then
+         if (v.func() or v.remove) then
+            tutorial_events[k] = nil;
+         end
+      end
+   end
+   -- nh.pline("TUT:turn");
 end

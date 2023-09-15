@@ -209,8 +209,11 @@ void NetHackQtBind::qt_init_nhwindows(int *argc, char **argv)
      * should be loaded by activate_chosen_soundlib() shortly.
      * gc.chosen_soundlib is initialized to soundlib_nosound. 
      */
-    if (gc.chosen_soundlib == soundlib_nosound)
-        assign_soundlib(soundlib_qtsound);
+    if (gc.chosen_soundlib == (uint32_t) soundlib_nosound) {
+        uint32_t soundlibchoice = (uint32_t) soundlib_qtsound;
+
+        assign_soundlib(soundlibchoice);
+    }
 #endif
 }
 
@@ -625,7 +628,8 @@ int NetHackQtBind::qt_nh_poskey(coordxy *x, coordxy *y, int *mod)
 
 void NetHackQtBind::qt_nhbell()
 {
-    QApplication::beep();
+    if (!::flags.silent)
+        QApplication::beep();
 }
 
 int NetHackQtBind::qt_doprev_message()
@@ -1039,7 +1043,7 @@ boolean NetHackQtBind::msgs_initd = false;
 static void Qt_positionbar(char *) {}
 #endif
 
-#if defined(SND_LIB_QTSOUND) && !defined(NO_QT_SOUND)
+#if defined(SND_LIB_QTSOUND) && !defined(QT_NO_SOUND)
 void NetHackQtBind::qtsound_init_nhsound(void)
 {
 }
@@ -1059,15 +1063,17 @@ void NetHackQtBind::qtsound_soundeffect(char *desc UNUSED, int32_t seid UNUSED, 
 void NetHackQtBind::qtsound_hero_playnotes(int32_t instrument UNUSED, const char *str UNUSED, int32_t volume UNUSED)
 {
 }
-#endif
+void NetHackQtBind::qtsound_ambience(int32_t ambienceid UNUSED, int32_t ambience_action UNUSED, int32_t proximity UNUSED)
+{
+}
+void NetHackQtBind::qtsound_verbal(char *text UNUSED, int32_t gender UNUSED, int32_t tone UNUSED, int32_t vol UNUSED, int32_t moreinfo UNUSED)
+{
+}
 
-#if defined(USER_SOUNDS) && !defined(QT_NO_SOUND)
 QSoundEffect *effect = NULL;
-#endif
 
 void NetHackQtBind::qtsound_play_usersound(char *filename, int32_t volume, int32_t idx UNUSED)
 {
-#if defined(USER_SOUNDS) && !defined(QT_NO_SOUND)
     if (!effect)
         effect = new QSoundEffect(nethack_qt_::NetHackQtBind::mainWidget());
     if (effect) {
@@ -1076,11 +1082,8 @@ void NetHackQtBind::qtsound_play_usersound(char *filename, int32_t volume, int32
         effect->setSource(QUrl::fromLocalFile(filename));
         effect->play();
     }
-#else
-    nhUse(filename);
-    nhUse(volume);
-#endif
 }
+#endif
 
 } // namespace nethack_qt_
 
@@ -1172,13 +1175,15 @@ struct window_procs Qt_procs = {
 #if defined(SND_LIB_QTSOUND) && !defined(QT_NO_SOUND)
 struct sound_procs qtsound_procs = {
     SOUNDID(qtsound),
-    SNDCAP_USERSOUNDS,
+    SOUND_TRIGGER_USERSOUNDS,
     nethack_qt_::NetHackQtBind::qtsound_init_nhsound,
     nethack_qt_::NetHackQtBind::qtsound_exit_nhsound,
     nethack_qt_::NetHackQtBind::qtsound_achievement,
     nethack_qt_::NetHackQtBind::qtsound_soundeffect,
     nethack_qt_::NetHackQtBind::qtsound_hero_playnotes,
     nethack_qt_::NetHackQtBind::qtsound_play_usersound,
+    nethack_qt_::NetHackQtBind::qtsound_ambience,
+    nethack_qt_::NetHackQtBind::qtsound_verbal,
 };
 #endif /* SND_LIB_QTSOUND and !QT_NO_SOUND */
 

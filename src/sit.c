@@ -87,6 +87,7 @@ throne_sit_effect(void)
 
                 /* Magical voice not affected by deafness */
                 pline("A voice echoes:");
+                SetVoice((struct monst *) 0, 0, 80, voice_throne);
                 verbalize("Thine audience hath been summoned, %s!",
                           flags.female ? "Dame" : "Sire");
                 while (cnt--)
@@ -96,6 +97,7 @@ throne_sit_effect(void)
         case 8:
             /* Magical voice not affected by deafness */
             pline("A voice echoes:");
+            SetVoice((struct monst *) 0, 0, 80, voice_throne);
             verbalize("By thine Imperious order, %s...",
                       flags.female ? "Dame" : "Sire");
             do_genocide(5); /* REALLY|ONTHRONE, see do_genocide() */
@@ -103,10 +105,11 @@ throne_sit_effect(void)
         case 9:
             /* Magical voice not affected by deafness */
             pline("A voice echoes:");
+            SetVoice((struct monst *) 0, 0, 80, voice_throne);
             verbalize(
-                      "A curse upon thee for sitting upon this most holy throne!");
+                 "A curse upon thee for sitting upon this most holy throne!");
             if (Luck > 0) {
-                make_blinded(Blinded + rn1(100, 250), TRUE);
+                make_blinded(BlindedTimeout + rn1(100, 250), TRUE);
                 change_luck((Luck > 1) ? -rnd(2) : -1);
             } else
                 rndcurse();
@@ -318,7 +321,10 @@ dosit(void)
                 u.utrap++;
             }
         } else {
-            You("sit down.");
+            /* when flying, "you land" might need some refinement; it sounds
+               as if you're staying on the ground but you will immediately
+               take off again unless you become stuck in a holding trap */
+            You("%s.", Flying ? "land" : "sit down");
             dotrap(trap, VIASITTING);
         }
     } else if ((Underwater || Is_waterlevel(&u.uz))
@@ -447,15 +453,20 @@ rndcurse(void)
     }
 }
 
-/* remove a random INTRINSIC ability */
-void
+/* remove a random INTRINSIC ability from hero.
+   returns the intrinsic property which was removed,
+   or 0 if nothing was removed. */
+int
 attrcurse(void)
 {
+    int ret = 0;
+
     switch (rnd(11)) {
     case 1:
         if (HFire_resistance & INTRINSIC) {
             HFire_resistance &= ~INTRINSIC;
             You_feel("warmer.");
+            ret = FIRE_RES;
             break;
         }
         /*FALLTHRU*/
@@ -463,6 +474,7 @@ attrcurse(void)
         if (HTeleportation & INTRINSIC) {
             HTeleportation &= ~INTRINSIC;
             You_feel("less jumpy.");
+            ret = TELEPORT;
             break;
         }
         /*FALLTHRU*/
@@ -470,6 +482,7 @@ attrcurse(void)
         if (HPoison_resistance & INTRINSIC) {
             HPoison_resistance &= ~INTRINSIC;
             You_feel("a little sick!");
+            ret = POISON_RES;
             break;
         }
         /*FALLTHRU*/
@@ -479,6 +492,7 @@ attrcurse(void)
             if (Blind && !Blind_telepat)
                 see_monsters(); /* Can't sense mons anymore! */
             Your("senses fail!");
+            ret = TELEPAT;
             break;
         }
         /*FALLTHRU*/
@@ -486,6 +500,7 @@ attrcurse(void)
         if (HCold_resistance & INTRINSIC) {
             HCold_resistance &= ~INTRINSIC;
             You_feel("cooler.");
+            ret = COLD_RES;
             break;
         }
         /*FALLTHRU*/
@@ -493,6 +508,7 @@ attrcurse(void)
         if (HInvis & INTRINSIC) {
             HInvis &= ~INTRINSIC;
             You_feel("paranoid.");
+            ret = INVIS;
             break;
         }
         /*FALLTHRU*/
@@ -507,6 +523,7 @@ attrcurse(void)
             }
             You("%s!", Hallucination ? "tawt you taw a puttie tat"
                                      : "thought you saw something");
+            ret = SEE_INVIS;
             break;
         }
         /*FALLTHRU*/
@@ -514,6 +531,7 @@ attrcurse(void)
         if (HFast & INTRINSIC) {
             HFast &= ~INTRINSIC;
             You_feel("slower.");
+            ret = FAST;
             break;
         }
         /*FALLTHRU*/
@@ -521,6 +539,7 @@ attrcurse(void)
         if (HStealth & INTRINSIC) {
             HStealth &= ~INTRINSIC;
             You_feel("clumsy.");
+            ret = STEALTH;
             break;
         }
         /*FALLTHRU*/
@@ -529,6 +548,7 @@ attrcurse(void)
         if (HProtection & INTRINSIC) {
             HProtection &= ~INTRINSIC;
             You_feel("vulnerable.");
+            ret = PROTECTION;
             break;
         }
         /*FALLTHRU*/
@@ -536,12 +556,14 @@ attrcurse(void)
         if (HAggravate_monster & INTRINSIC) {
             HAggravate_monster &= ~INTRINSIC;
             You_feel("less attractive.");
+            ret = AGGRAVATE_MONSTER;
             break;
         }
         /*FALLTHRU*/
     default:
         break;
     }
+    return ret;
 }
 
 /*sit.c*/

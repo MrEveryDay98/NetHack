@@ -1,4 +1,4 @@
-/* NetHack 3.7	unixmain.c	$NHDT-Date: 1646313937 2022/03/03 13:25:37 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.99 $ */
+/* NetHack 3.7	unixmain.c	$NHDT-Date: 1693359574 2023/08/30 01:39:34 $  $NHDT-Branch: keni-crashweb2 $:$NHDT-Revision: 1.117 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /*-Copyright (c) Robert Patrick Rankin, 2011. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -39,6 +39,9 @@ ATTRNORETURN static void opt_terminate(void) NORETURN;
 ATTRNORETURN static void opt_usage(const char *) NORETURN;
 static void opt_showpaths(const char *);
 ATTRNORETURN static void scores_only(int, char **, const char *) NORETURN;
+#ifdef SND_LIB_INTEGRATED
+uint32_t soundlibchoice = soundlib_nosound;
+#endif
 
 #ifdef _M_UNIX
 extern void check_sco_console(void);
@@ -62,7 +65,7 @@ main(int argc, char *argv[])
     boolean resuming = FALSE; /* assume new game */
     boolean plsel_once = FALSE;
 
-    early_init();
+    early_init(argc, argv);
 
 #if defined(__APPLE__)
     {
@@ -101,6 +104,20 @@ main(int argc, char *argv[])
     (void) umask(0777 & ~FCMASK);
 
     choose_windows(DEFAULT_WINDOW_SYS);
+
+#ifdef SND_LIB_INTEGRATED
+    /* One of the soundlib interfaces was integrated on build.
+     * We can leave a hint here for activate_chosen_soundlib later.
+     * assign_soundlib() just sets an indicator, it doesn't initialize
+     * any soundlib, and the indicator could be overturned before
+     * activate_chosen_soundlib() gets called. Qt will place its own
+     * hint if qt_init_nhwindow() is invoked.
+     */
+#if defined(SND_LIB_MACSOUND)
+    soundlibchoice = soundlib_macsound;
+    assign_soundlib(soundlibchoice);
+#endif
+#endif
 
 #ifdef CHDIR /* otherwise no chdir() */
     /*
@@ -147,9 +164,11 @@ main(int argc, char *argv[])
      * It seems you really want to play.
      */
     u.uhp = 1; /* prevent RIP on early quits */
+#if defined(HANGUPHANDLING)
     gp.program_state.preserve_locks = 1;
 #ifndef NO_SIGNAL
     sethanguphandler((SIG_RET_TYPE) hangup);
+#endif
 #endif
 
     process_options(argc, argv); /* command line options */
@@ -199,7 +218,7 @@ main(int argc, char *argv[])
      */
     vision_init();
 
-    display_gamewindows();
+    init_sound_disp_gamewindows();
 
     /*
      * First, try to find and restore a save file for specified character.
@@ -220,7 +239,9 @@ main(int argc, char *argv[])
      */
     if (*gp.plname) {
         getlock();
+#if defined(HANGUPHANDLING)
         gp.program_state.preserve_locks = 0; /* after getlock() */
+#endif
     }
 
     if (*gp.plname && (nhfp = restore_saved_game()) != 0) {
@@ -602,6 +623,15 @@ early_options(int *argc_p, char ***argv_p, char **hackdir_p)
             ++arg;
 
         switch (arg[1]) { /* char after leading dash */
+	case 'b':
+#ifdef CRASHREPORT
+		// --bidshow
+	    if (argcheck(argc, argv, ARG_BIDSHOW) == 2){
+                opt_terminate();
+                /*NOTREACHED*/
+	    }
+#endif
+	    break;
         case 'd':
             if (argcheck(argc, argv, ARG_DEBUG) == 1) {
                 consume_arg(ndx, argc_p, argv_p), consumed = 1;

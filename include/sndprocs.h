@@ -1,75 +1,12 @@
-/* NetHack 3.7	sndprocs.h	$NHDT-Date: $  $NHDT-Branch: $:$NHDT-Revision: $ */
+/* NetHack 3.7	sndprocs.h	$NHDT-Date: 1693253118 2023/08/28 20:05:18 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.24 $ */
 /* Copyright (c) Michael Allison, 2022                                */
 /* NetHack may be freely redistributed.  See license for details. */
 
 #ifndef SNDPROCS_H
 #define SNDPROCS_H
 
-/*
- *
- *  Types of potential sound supports (all are optional):
- *
- *      SNDCAP_USERSOUNDS     User-specified sounds that play based on config
- *                            file entries that identify a regular expression
- *                            to match against message window text, and identify
- *                            an external sound file to load in response.
- *                            The sound interface function pointer used to invoke
- *                            it:
- *
- *                             void (*sound_play_usersound)(char *filename,
- *                                             int32_t volume, int32_t idx);
- *
- *      SNDCAP_HEROMUSIC      Invoked by the core when the in-game hero is
- *                            playing a tune on an instrument. The sound
- *                            interface function pointer used to invoke it:
- *
- *                             void (*sound_hero_playnotes)(int32_t instrument,
- *                                             const char *str, int32_t volume);
- *
- *      SNDCAP_ACHIEVEMENTS   Invoked by the core when an in-game achievement
- *                            is reached. The soundlib routines could play
- *                            appropriate theme or mood music in response.
- *                            There would need to be a way to map the
- *                            achievements to external user-specified sounds.
- *                            The sound interface function pointer used to
- *                            invoke it:
- *
- *                                void (*sound_achievement)(schar, schar,
- *                                                          int32_t);
- *
- *      SNDCAP_SOUNDEFFECTS   Invoked by the core when something
- *                            sound-producing happens in the game. The soundlib
- *                            routines could play an appropriate sound effect
- *                            in response. They can be public-domain or
- *                            suitably-licensed stock sounds included with the
- *                            game source and made available during the build
- *                            process, or (not-yet-implemented) a way to
- *                            tie particular sound effects to a user-specified
- *                            sound samples in a config file. The sound
- *                            interface function pointer used to invoke it:
- *
- *                               void (*sound_soundeffect)(char *desc, int32_t,
- *                                                              int32_t volume);
- *
- *  Development notes:
- *       - gc.chosen_soundlib holds the soundlib_id that will be initialized
- *         at the appropriate time (startup or after an option change). It
- *         is initialized to soundlib_nosound, so that is what will be used if
- *         the initial value isn't replaced via an assign_soundlib() call
- *         prior to the call to the activate_chosen_soundlib() in
- *         moveloop_preamble() at the start of the game.
- *       - ga.active_soundlib holds the soundlib_id of the active soundlib.
- *         It is initialized to soundlib_unassigned. It will get changed to
- *         reflect the activated soundlib_id once activate_chosen_soundlib()
- *         has been called.
- *
- */
-
 enum soundlib_ids {
-    soundlib_unassigned = 0,
-#ifdef SND_LIB_QTSOUND
-    soundlib_qtsound,
-#endif
+    soundlib_nosound,
 #ifdef SND_LIB_PORTAUDIO
     soundlib_portaudio,
 #endif
@@ -94,33 +31,56 @@ enum soundlib_ids {
 #ifdef SND_LIB_WINDSOUND
     soundlib_windsound,
 #endif
-    soundlib_nosound
+#ifdef SND_LIB_MACSOUND
+    soundlib_macsound,
+#endif
+#ifdef SND_LIB_QTSOUND
+    soundlib_qtsound,
+#endif
+    soundlib_notused
 };
 
 struct sound_procs {
     const char *soundname;
     enum soundlib_ids soundlib_id;
-    unsigned long sndcap; /* capabilities in the port */
+    unsigned long sound_triggers; /* capabilities in the port */
     void (*sound_init_nhsound)(void);
     void (*sound_exit_nhsound)(const char *);
     void (*sound_achievement)(schar, schar, int32_t);
     void (*sound_soundeffect)(char *desc, int32_t, int32_t volume);
-    void (*sound_hero_playnotes)(int32_t instrument, const char *str, int32_t volume);
+    void (*sound_hero_playnotes)(int32_t instrument, const char *str,
+                                 int32_t volume);
     void (*sound_play_usersound)(char *filename, int32_t volume, int32_t idx);
+    void (*sound_ambience)(int32_t ambience_action, int32_t ambienceid,
+                           int32_t proximity);
+    void (*sound_verbal)(char *text, int32_t gender, int32_t tone,
+                         int32_t vol, int32_t moreinfo);
+};
+
+struct sound_voice {
+    int32_t serialno;
+    int32_t gender;
+    int32_t tone;
+    int32_t volume;
+    int32_t moreinfo;
+    struct monst *mon;
+    const char *nameid;
 };
 
 extern struct sound_procs sndprocs;
 
-#define SOUNDID(soundname) #soundname, soundlib_##soundname
+#define SOUNDID(soundname) #soundname, ((enum soundlib_ids) soundlib_##soundname)
 
 /*
- * SOUNDCAP
+ * Types of triggers
  */
-#define SNDCAP_USERSOUNDS   0x0001L
-#define SNDCAP_HEROMUSIC    0x0002L
-#define SNDCAP_ACHIEVEMENTS 0x0004L
-#define SNDCAP_SOUNDEFFECTS 0x0008L
-                            /* 28 free bits */
+#define SOUND_TRIGGER_USERSOUNDS   0x0001L
+#define SOUND_TRIGGER_HEROMUSIC    0x0002L
+#define SOUND_TRIGGER_ACHIEVEMENTS 0x0004L
+#define SOUND_TRIGGER_SOUNDEFFECTS 0x0008L
+#define SOUND_TRIGGER_AMBIENCE     0x0010L
+#define SOUND_TRIGGER_VERBAL       0x0020L
+                            /* 26 free bits */
 
 extern struct sound_procs soundprocs;
 
@@ -179,225 +139,163 @@ enum instruments_broad {
 };
 #endif
 
+#define SEFFECTS_ENUM
 enum sound_effect_entries {
-    se_zero_invalid                   = 0,
-    se_faint_splashing                = 1,
-    se_crackling_of_hellfire          = 2,
-    se_heart_beat                     = 3,
-    se_typing_noise                   = 4,
-    se_hollow_sound                   = 5,
-    se_rustling_paper                 = 6,
-    se_crushing_sound                 = 7,
-    se_splash                         = 8,
-    se_chains_rattling_gears_turning  = 9,
-    se_smashing_and_crushing          = 10,
-    se_gears_turning_chains_rattling  = 11,
-    se_loud_splash                    = 12,
-    se_lound_crash                    = 13,
-    se_crashing_rock                  = 14,
-    se_sizzling                       = 15,
-    se_crashing_boulder               = 16,
-    se_boulder_drop                   = 17,
-    se_item_tumble_downwards          = 18,
-    se_drain_noises                   = 19,
-    se_ring_in_drain                  = 20,
-    se_groans_and_moans               = 21,
-    se_scratching                     = 22,
-    se_glass_shattering               = 23,
-    se_egg_cracking                   = 24,
-    se_gushing_sound                  = 25,
-    se_glass_crashing                 = 26,
-    se_egg_splatting                  = 27,
-    se_sinister_laughter              = 28,
-    se_blast                          = 29,
-    se_stone_breaking                 = 30,
-    se_stone_crumbling                = 31,
-    se_snakes_hissing                 = 32,
-    se_loud_pop                       = 33,
-    se_clanking_pipe                  = 34,
-    se_sewer_song                     = 35,
-    se_monster_behind_boulder         = 36,
-    se_wailing_of_the_banshee         = 37,
-    se_swoosh                         = 38,
-    se_explosion                      = 39,
-    se_crashing_sound                 = 40,
-    se_someone_summoning              = 41,
-    se_rushing_wind_noise             = 42,
-    se_splat_from_engulf              = 43,
-    se_faint_sloshing                 = 44,
-    se_crunching_sound                = 45,
-    se_slurping_sound                 = 46,
-    se_masticating_sound              = 47,
-    se_distant_thunder                = 48,
-    se_applause                       = 49,
-    se_shrill_whistle                 = 50,
-    se_someone_yells                  = 51,
-    se_door_unlock_and_open           = 52,
-    se_door_open                      = 53,
-    se_door_crash_open                = 54,
-    se_dry_throat_rattle              = 55,
-    se_cough                          = 56,
-    se_angry_snakes                   = 57,
-    se_zap_then_explosion             = 58,
-    se_zap                            = 59,
-    se_horn_being_played              = 60,
-    se_mon_chugging_potion            = 61,
-    se_bugle_playing_reveille         = 62,
-    se_crash_through_floor            = 63,
-    se_thump                          = 64,
-    se_scream                         = 65,
-    se_tumbler_click                  = 66,
-    se_gear_turn                      = 67,
-    se_divine_music                   = 68,
-    se_thunderclap                    = 69,
-    se_sad_wailing                    = 70,
-    se_maniacal_laughter              = 71,
-    se_rumbling_of_earth              = 72,
-    se_clanging_sound                 = 73,
-    se_mutter_imprecations            = 74,
-    se_mutter_incantation             = 75,
-    se_angry_voice                    = 76,
-    se_sceptor_pounding               = 77,
-    se_courtly_conversation           = 78,
-    se_low_buzzing                    = 79,
-    se_angry_drone                    = 80,
-    se_bees                           = 81,
-    se_someone_searching              = 82,
-    se_guards_footsteps               = 83,
-    se_faint_chime                    = 84,
-    se_loud_click                     = 85,
-    se_soft_click                     = 86,
-    se_squeak                         = 87,
-    se_squeak_C                       = 88,
-    se_squeak_D_flat                  = 89,
-    se_squeak_D                       = 90,
-    se_squeak_E_flat                  = 91,
-    se_squeak_E                       = 92,
-    se_squeak_F                       = 93,
-    se_squeak_F_sharp                 = 94,
-    se_squeak_G                       = 95,
-    se_squeak_G_sharp                 = 96,
-    se_squeak_A                       = 97,
-    se_squeak_B_flat                  = 98,
-    se_squeak_B                       = 99,
-    se_someone_bowling                = 100,
-    se_rumbling                       = 101,
-    se_loud_crash                     = 102,
-    se_deafening_roar_atmospheric     = 103,
-    se_low_hum                        = 104,
-    se_laughter                       = 105,
-    se_cockatrice_hiss                = 106,
-    se_chant                          = 107,
-    se_cracking_sound                 = 108,
-    se_ripping_sound                  = 109,
-    se_thud                           = 110,
-    se_clank                          = 111,
-    se_crumbling_sound                = 112,
-    se_soft_crackling                 = 113,
-    se_crackling                      = 114,
-    se_sharp_crack                    = 115,
-    se_wall_of_force                  = 116,
-    se_alarm                          = 117,
-    se_kick_door_it_shatters          = 118,
-    se_kick_door_it_crashes_open      = 119,
-    se_bubble_rising                  = 120,
-    se_bolt_of_lightning              = 121,
-    se_board_squeak                   = 122,
-    se_board_squeaks_loudly           = 123,
-    se_boing                          = 124,
-    se_crashed_ceiling                = 125,
-    se_clash                          = 126,
-    se_crash_door                     = 127,
-    se_crash                          = 128,
-    se_crash_throne_destroyed         = 129,
-    se_crash_something_broke          = 130,
-    se_kadoom_boulder_falls_in        = 131,
-    se_klunk_pipe                     = 132,
-    se_kerplunk_boulder_gone          = 133,
-    se_klunk                          = 134,
-    se_klick                          = 135,
-    se_kaboom_door_explodes           = 136,
-    se_kaboom_boom_boom               = 137,
-    se_kaablamm_of_mine               = 138,
-    se_kaboom                         = 139,
-    se_splat_egg                      = 140,
-    se_destroy_web                    = 141,
-    se_iron_ball_dragging_you         = 142,
-    se_iron_ball_hits_you             = 143,
-    se_lid_slams_open_falls_shut      = 144,
-    se_chain_shatters                 = 145,
-    se_furious_bubbling               = 146,
-    se_air_crackles                   = 147,
-    se_potion_crash_and_break         = 148,
-    se_hiss                           = 149,
-    se_growl                          = 150,
-    se_canine_bark                    = 151,
-    se_canine_growl                   = 152,
-    se_canine_whine                   = 153,
-    se_canine_yip                     = 154,
-    se_canine_howl                    = 155,
-    se_feline_yowl                    = 156,
-    se_feline_meow                    = 157,
-    se_feline_purr                    = 158,
-    se_feline_yip                     = 159,
-    se_feline_mew                     = 160,
-    se_roar                           = 161,
-    se_snarl                          = 162,
-    se_buzz                           = 163,
-    se_squeek                         = 164,
-    se_squawk                         = 165,
-    se_squeal                         = 166,
-    se_screech                        = 167,
-    se_equine_neigh                   = 168,
-    se_equine_whinny                  = 169,
-    se_equine_whicker                 = 170,
-    se_bovine_moo                     = 171,
-    se_bovine_bellow                  = 172,
-    se_wail                           = 173,
-    se_groan                          = 174,
-    se_grunt                          = 175,
-    se_gurgle                         = 176,
-    se_elephant_trumpet               = 177,
-    se_snake_rattle                   = 178,
-    se_hallu_growl                    = 179,
+    se_zero_invalid = 0,
+#include "seffects.h"
     number_of_se_entries
 };
+#undef SEFFECTS_ENUM
+
+enum ambience_actions {
+    ambience_nothing, ambience_begin, ambience_end, ambience_update
+};
+
+enum ambiences {
+    amb_noambience,
+};
+
+enum voice_moreinfo {
+    voice_nothing_special,
+    voice_talking_artifact = 0x0001,
+    voice_deity            = 0x0002,
+    voice_oracle           = 0x0004,
+    voice_throne           = 0x0008,
+    voice_death            = 0x0010
+};
+
+enum achievements_arg2 {
+    sa2_zero_invalid, sa2_splashscreen, sa2_newgame_nosplash, sa2_restoregame,
+    sa2_xplevelup, sa2_xpleveldown, number_of_sa2_entries
+};
+
+/*
+Arguments for sound_achievement(schar arg1, schar arg2, int32_t aflags)
+
+Arguments for actual achievements, those in you.h,
+        arg1 = the achievement value.
+        arg2 = 0 (irrelevant).
+      aflags = 0 for first time, 1 for repeat.
+
+These next ones make use of arg2, and aflags may be
+filled with additional int values dependent on arg2.
+arg1 must always be 0 for these.
+
+SoundAchievement(0, sa2_splashscreen, 0);
+SoundAchievement(0, sa2_newgame_nosplash, 0);
+SoundAchievement(0, sa2_restoregame, 0);
+SoundAchievement(0, sa2_levelup, level);
+SoundAchievement(0, sa2_xpleveldown, level);
+*/
 
 #if defined(SND_LIB_QTSOUND) || defined(SND_LIB_PORTAUDIO) \
         || defined(SND_LIB_OPENAL) || defined(SND_LIB_SDL_MIXER) \
         || defined(SND_LIB_MINIAUDIO) || defined(SND_LIB_FMOD) \
         || defined(SND_LIB_SOUND_ESCCODES) || defined(SND_LIB_VISSOUND) \
-        || defined(SND_LIB_WINDSOUND)
+        || defined(SND_LIB_WINDSOUND) || defined(SND_LIB_MACSOUND)
 
-#define SND_LIB_INTEGRATED   /* shortcut for conditional code in other files */
+/* shortcut for conditional code in other files */
+#define SND_LIB_INTEGRATED
 
 #define Play_usersound(filename, vol, idx) \
-    do {                                                                  \
-        if (!Deaf && soundprocs.sound_play_usersound                      \
-            && ((soundprocs.sndcap & SNDCAP_USERSOUNDS) != 0))            \
-            (*soundprocs.sound_play_usersound)((filename), (vol), (idx)); \
+    do {                                                                      \
+        if (iflags.sounds && !Deaf && soundprocs.sound_play_usersound         \
+            && ((soundprocs.sound_triggers & SOUND_TRIGGER_USERSOUNDS) != 0)) \
+            (*soundprocs.sound_play_usersound)((filename), (vol), (idx));     \
     } while(0)
 
 #define Soundeffect(seid, vol) \
-    do {                                                              \
-        if (!Deaf && soundprocs.sound_soundeffect                     \
-            && ((soundprocs.sndcap & SNDCAP_SOUNDEFFECTS) != 0))      \
-            (*soundprocs.sound_soundeffect)(emptystr, (seid), (vol)); \
+    do {                                                                      \
+        if (iflags.sounds && !Deaf && soundprocs.sound_soundeffect            \
+          && ((soundprocs.sound_triggers & SOUND_TRIGGER_SOUNDEFFECTS) != 0)) \
+            (*soundprocs.sound_soundeffect)(emptystr, (seid), (vol));         \
+    } while(0)
+
+/* Player's perspective, not the hero's; no Deaf suppression */
+#define SoundeffectEvenIfDeaf(seid, vol) \
+    do {                                                                      \
+        if (iflags.sounds && !soundprocs.sound_soundeffect                    \
+          && ((soundprocs.sound_triggers & SOUND_TRIGGER_SOUNDEFFECTS) != 0)) \
+            (*soundprocs.sound_soundeffect)(emptystr, (seid), (vol));         \
     } while(0)
 
 #define Hero_playnotes(instrument, str, vol) \
-    do {                                                                    \
-        if (!Deaf && soundprocs.sound_hero_playnotes                        \
-            && ((soundprocs.sndcap & SNDCAP_HEROMUSIC) != 0))               \
-            (*soundprocs.sound_hero_playnotes)((instrument), (str), (vol)); \
+    do {                                                                     \
+        if (iflags.sounds && !Deaf && soundprocs.sound_hero_playnotes        \
+            && ((soundprocs.sound_triggers & SOUND_TRIGGER_HEROMUSIC) != 0)) \
+            (*soundprocs.sound_hero_playnotes)((instrument), (str), (vol));  \
     } while(0)
+
+/* Player's perspective, not the hero's; no Deaf suppression */
+#define SoundAchievement(arg1, arg2, avals) \
+    do {                                                                      \
+        if (iflags.sounds && soundprocs.sound_achievement                     \
+          && ((soundprocs.sound_triggers & SOUND_TRIGGER_ACHIEVEMENTS) != 0)) \
+            (*soundprocs.sound_achievement)((arg1), (arg2), (avals));         \
+    } while(0)
+
+/* sound_speak is in sound.c */
+#define SoundSpeak(text) \
+    do {                                                                     \
+        if ((gp.pline_flags & (PLINE_VERBALIZE | PLINE_SPEECH)) != 0         \
+            && soundprocs.sound_verbal && iflags.voices                      \
+            && ((soundprocs.sound_triggers & SOUND_TRIGGER_VERBAL) != 0))    \
+            sound_speak(text);                                               \
+    } while(0)
+
+/* set_voice is in sound.c */
+#define SetVoice(mon, tone, vol, moreinfo) \
+    do {                                                                     \
+        set_voice(mon, tone, vol, moreinfo);                                 \
+    } while(0)
+
+/*  void (*sound_achievement)(schar, schar, int32_t); */
+
+#ifdef SOUNDLIBONLY
+#undef SOUNDLIBONLY
+#endif
+#define SOUNDLIBONLY
+#ifdef SND_SPEECH
+#define VOICEONLY
 #else
+#define VOICEONLY UNUSED
+#endif
+
+#else  /*  NO SOUNDLIB IS INTEGRATED AFTER THIS */
+
 #ifdef SND_LIB_INTEGRATED
-#undef  SND_LIB_INTEGRATED
+#undef SND_LIB_INTEGRATED
 #endif
 #define Play_usersound(filename, vol, idx)
 #define Soundeffect(seid, vol)
 #define Hero_playnotes(instrument, str, vol)
+#define SoundAchievement(arg1, arg2, avals)
+#define SoundSpeak(text)
+#define SetVoice(mon, tone, vol, moreinfo)
+#ifdef SOUNDLIBONLY
+#undef SOUNDLIBONLY
 #endif
+#define SOUNDLIBONLY UNUSED
+#ifdef SND_SPEECH
+#undef SND_SPEECH
+#endif
+#ifdef VOICEONLY
+#undef VOICEONLY
+#endif
+#define VOICEONLY UNUSED
+
+#endif  /* No SOUNDLIB */
+
+enum findsound_approaches {
+    findsound_embedded,
+    findsound_soundfile
+};
+
+enum sound_file_flags {
+    sff_default,            /* add dir prefix + '/' + sound + suffix */
+    sff_base_only,          /* base sound name only, no dir, no suffix */
+    sff_havedir_append_rest, /* dir provided, append base sound name + suffix */
+    sff_baseknown_add_rest /* base is already known, add dir and suffix */
+};
 
 #endif /* SNDPROCS_H */

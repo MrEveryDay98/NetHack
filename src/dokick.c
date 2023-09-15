@@ -21,6 +21,7 @@ static boolean watchman_thief_arrest(struct monst *);
 static boolean watchman_door_damage(struct monst *, coordxy, coordxy);
 static void kick_dumb(coordxy, coordxy);
 static void kick_ouch(coordxy, coordxy, const char *);
+static void kick_door(coordxy, coordxy, int);
 static void otransit_msg(struct obj *, boolean, boolean, long);
 static void drop_to(coord *, schar, coordxy, coordxy);
 
@@ -206,9 +207,9 @@ kick_monster(struct monst *mon, coordxy x, coordxy y)
             } else if (tmp > kickdieroll) {
                 You("kick %s.", mon_nam(mon));
                 sum = damageum(mon, uattk, specialdmg);
-                (void) passive(mon, uarmf, (sum != MM_MISS),
-                               !(sum & MM_DEF_DIED), AT_KICK, FALSE);
-                if ((sum & MM_DEF_DIED))
+                (void) passive(mon, uarmf, (sum != M_ATTK_MISS),
+                               !(sum & M_ATTK_DEF_DIED), AT_KICK, FALSE);
+                if ((sum & M_ATTK_DEF_DIED))
                     break; /* Defender died */
             } else {
                 missum(mon, uattk, (tmp + armorpenalty > kickdieroll));
@@ -327,6 +328,7 @@ ghitm(register struct monst *mtmp, register struct obj *gold)
                 if (!robbed)
                     make_happy_shk(mtmp, FALSE);
             } else {
+                SetVoice(mtmp, 0, 80, 0);
                 if (mtmp->mpeaceful) {
                     ESHK(mtmp)->credit += value;
                     You("have %ld %s in credit.", ESHK(mtmp)->credit,
@@ -335,6 +337,7 @@ ghitm(register struct monst *mtmp, register struct obj *gold)
                     verbalize("Thanks, scum!");
             }
         } else if (mtmp->ispriest) {
+            SetVoice(mtmp, 0, 80, 0);
             if (mtmp->mpeaceful)
                 verbalize("Thank you for your contribution.");
             else
@@ -344,8 +347,9 @@ ghitm(register struct monst *mtmp, register struct obj *gold)
             /* Some of these are iffy, because a hostile guard
                won't become peaceful and resume leading hero
                out of the vault.  If he did do that, player
-               could try fighting, then weasle out of being
+               could try fighting, then weasel out of being
                killed by throwing his/her gold when losing. */
+            SetVoice(mtmp, 0, 80, 0);
             verbalize(umoney ? "Drop the rest and follow me."
                       : hidden_gold(TRUE)
                         ? "You still have hidden gold.  Drop it now."
@@ -373,13 +377,16 @@ ghitm(register struct monst *mtmp, register struct obj *gold)
             }
 
             if (!mtmp->mpeaceful) {
+                SetVoice(mtmp, 0, 80, 0);
                 if (goldreqd)
                     verbalize("That's not enough, coward!");
-                else /* unbribeable (watchman) */
+                else /* unbribable (watchman) */
                     verbalize("I don't take bribes from scum like you!");
             } else if (was_angry) {
+                SetVoice(mtmp, 0, 80, 0);
                 verbalize("That should do.  Now beat it!");
             } else {
+                SetVoice(mtmp, 0, 80, 0);
                 verbalize("Thanks for the tip, %s.",
                           flags.female ? "lady" : "buddy");
             }
@@ -874,6 +881,7 @@ kick_ouch(coordxy x, coordxy y, const char *kickobjnam)
             (void) find_drawbridge(&x, &y);
             gm.maploc = &levl[x][y];
         }
+        wake_nearto(x, y, 5 * 5);
     }
     if (!rn2(3))
         set_wounded_legs(RIGHT_SIDE, 5 + rnd(5));
@@ -881,6 +889,64 @@ kick_ouch(coordxy x, coordxy y, const char *kickobjnam)
     losehp(Maybe_Half_Phys(dmg), kickstr(buf, kickobjnam), KILLED_BY);
     if (Is_airlevel(&u.uz) || Levitation)
         hurtle(-u.dx, -u.dy, rn1(2, 4), TRUE); /* assume it's heavy */
+}
+
+static void
+kick_door(coordxy x, coordxy y, int avrg_attrib)
+{
+    if (gm.maploc->doormask == D_ISOPEN || gm.maploc->doormask == D_BROKEN
+        || gm.maploc->doormask == D_NODOOR) {
+        kick_dumb(x, y);
+        return; /* uses a turn */
+    }
+
+    /* not enough leverage to kick open doors while levitating */
+    if (Levitation) {
+        kick_ouch(x, y, "");
+        return;
+    }
+
+    exercise(A_DEX, TRUE);
+    /* door is known to be CLOSED or LOCKED */
+    if (rnl(35) < avrg_attrib + (!martial() ? 0 : ACURR(A_DEX))) {
+        boolean shopdoor = *in_rooms(x, y, SHOPBASE) ? TRUE : FALSE;
+        /* break the door */
+        if (gm.maploc->doormask & D_TRAPPED) {
+            if (Verbose(0, dokick))
+                You("kick the door.");
+            exercise(A_STR, FALSE);
+            gm.maploc->doormask = D_NODOOR;
+            b_trapped("door", FOOT);
+        } else if (ACURR(A_STR) > 18 && !rn2(5) && !shopdoor) {
+            Soundeffect(se_kick_door_it_shatters, 50);
+            pline("As you kick the door, it shatters to pieces!");
+            exercise(A_STR, TRUE);
+            gm.maploc->doormask = D_NODOOR;
+        } else {
+            Soundeffect(se_kick_door_it_crashes_open, 50);
+            pline("As you kick the door, it crashes open!");
+            exercise(A_STR, TRUE);
+            gm.maploc->doormask = D_BROKEN;
+        }
+        feel_newsym(x, y); /* we know we broke it */
+        unblock_point(x, y); /* vision */
+        if (shopdoor) {
+            add_damage(x, y, SHOP_DOOR_COST);
+            pay_for_damage("break", FALSE);
+        }
+        if (in_town(x, y))
+            (void) get_iter_mons(watchman_thief_arrest);
+    } else {
+        if (Blind)
+            feel_location(x, y); /* we know we hit it */
+        exercise(A_STR, TRUE);
+        /* note: this used to be unconditional "WHAMMM!!!" but that has a
+           fairly strong connotation of noise that a deaf hero shouldn't
+           hear; we've kept the extra 'm's and one of the extra '!'s */
+        pline("%s!!", (Deaf || !rn2(3)) ? "Thwack" : "Whammm");
+        if (in_town(x, y))
+            (void) get_iter_mons_xy(watchman_door_damage, x, y);
+    }
 }
 
 /* the #kick command */
@@ -1071,9 +1137,11 @@ dokick(void)
         return ECMD_TIME;
     }
     (void) unmap_invisible(x, y);
-    if (is_pool(x, y) ^ !!u.uinwater) {
+    if ((is_pool(x, y) || gm.maploc->typ == LAVAWALL) ^ !!u.uinwater) {
         /* objects normally can't be removed from water by kicking */
-        You("splash some %s around.", hliquid("water"));
+        You("splash some %s around.",
+            hliquid(is_pool(x, y) ? "water" : "lava"));
+        /* pretend the kick is fast enough for lava not to burn */
         return ECMD_TIME;
     }
 
@@ -1098,9 +1166,8 @@ dokick(void)
                 pline("Crash!  %s a secret door!",
                       /* don't "kick open" when it's locked
                          unless it also happens to be trapped */
-                      (gm.maploc->doormask & (D_LOCKED | D_TRAPPED)) == D_LOCKED
-                          ? "Your kick uncovers"
-                          : "You kick open");
+                      ((gm.maploc->doormask & (D_LOCKED | D_TRAPPED))
+                       == D_LOCKED) ? "Your kick uncovers" : "You kick open");
                 exercise(A_DEX, TRUE);
                 if (gm.maploc->doormask & D_TRAPPED) {
                     gm.maploc->doormask = D_NODOOR;
@@ -1217,26 +1284,33 @@ dokick(void)
         if (IS_GRAVE(gm.maploc->typ)) {
             if (Levitation) {
                 kick_dumb(x, y);
-                return ECMD_TIME;
-            }
-            if (rn2(4)) {
+            } else if (rn2(4)) {
+                /* minor injury */
                 kick_ouch(x, y, "");
-                return ECMD_TIME;
-            }
-            exercise(A_WIS, FALSE);
-            if (Role_if(PM_ARCHEOLOGIST) || Role_if(PM_SAMURAI)
-                || ((u.ualign.type == A_LAWFUL) && (u.ualign.record > -10))) {
-                adjalign(-sgn(u.ualign.type));
-            }
-            gm.maploc->typ = ROOM;
-            gm.maploc->doormask = 0;
-            (void) mksobj_at(ROCK, x, y, TRUE, FALSE);
-            del_engr_at(x, y);
-            if (Blind)
-                pline("Crack!  %s broke!", Something);
-            else {
-                pline_The("headstone topples over and breaks!");
-                newsym(x, y);
+            } else if (!gm.maploc->disturbed && !rn2(2)) {
+                /* disturb the grave: summon a ghoul (once only), same as
+                   when engraving */
+                disturb_grave(x, y);
+            } else {
+                /* destroy the headstone, implicitly destroying any
+                   not-yet-created contents (including zombie or mummy);
+                   any already created contents will still be buried here */
+                exercise(A_WIS, FALSE);
+                if (Role_if(PM_ARCHEOLOGIST) || Role_if(PM_SAMURAI)
+                    || (u.ualign.type == A_LAWFUL && u.ualign.record > -10))
+                    adjalign(-sgn(u.ualign.type));
+                gm.maploc->typ = ROOM;
+                gm.maploc->emptygrave = 0; /* clear 'flags' */
+                gm.maploc->disturbed = 0; /* clear 'horizontal' */
+                (void) mksobj_at(ROCK, x, y, TRUE, FALSE);
+                del_engr_at(x, y);
+                if (Blind) {
+                    /* [feel this happen if Deaf?] */
+                    pline("Crack!  %s broke!", Something);
+                } else {
+                    pline_The("headstone topples over and breaks!");
+                    newsym(x, y);
+                }
             }
             return ECMD_TIME;
         }
@@ -1382,59 +1456,7 @@ dokick(void)
         return ECMD_TIME;
     }
 
-    if (gm.maploc->doormask == D_ISOPEN || gm.maploc->doormask == D_BROKEN
-        || gm.maploc->doormask == D_NODOOR) {
-        kick_dumb(x, y);
-        return ECMD_TIME; /* uses a turn */
-    }
-
-    /* not enough leverage to kick open doors while levitating */
-    if (Levitation) {
-        kick_ouch(x, y, "");
-        return ECMD_TIME;
-    }
-
-    exercise(A_DEX, TRUE);
-    /* door is known to be CLOSED or LOCKED */
-    if (rnl(35) < avrg_attrib + (!martial() ? 0 : ACURR(A_DEX))) {
-        boolean shopdoor = *in_rooms(x, y, SHOPBASE) ? TRUE : FALSE;
-        /* break the door */
-        if (gm.maploc->doormask & D_TRAPPED) {
-            if (Verbose(0, dokick))
-                You("kick the door.");
-            exercise(A_STR, FALSE);
-            gm.maploc->doormask = D_NODOOR;
-            b_trapped("door", FOOT);
-        } else if (ACURR(A_STR) > 18 && !rn2(5) && !shopdoor) {
-            Soundeffect(se_kick_door_it_shatters, 50);
-            pline("As you kick the door, it shatters to pieces!");
-            exercise(A_STR, TRUE);
-            gm.maploc->doormask = D_NODOOR;
-        } else {
-            Soundeffect(se_kick_door_it_crashes_open, 50);
-            pline("As you kick the door, it crashes open!");
-            exercise(A_STR, TRUE);
-            gm.maploc->doormask = D_BROKEN;
-        }
-        feel_newsym(x, y); /* we know we broke it */
-        unblock_point(x, y); /* vision */
-        if (shopdoor) {
-            add_damage(x, y, SHOP_DOOR_COST);
-            pay_for_damage("break", FALSE);
-        }
-        if (in_town(x, y))
-            (void) get_iter_mons(watchman_thief_arrest);
-    } else {
-        if (Blind)
-            feel_location(x, y); /* we know we hit it */
-        exercise(A_STR, TRUE);
-        /* note: this used to be unconditional "WHAMMM!!!" but that has a
-           fairly strong connotation of noise that a deaf hero shouldn't
-           hear; we've kept the extra 'm's and one of the extra '!'s */
-        pline("%s!!", (Deaf || !rn2(3)) ? "Thwack" : "Whammm");
-        if (in_town(x, y))
-            (void) get_iter_mons_xy(watchman_door_damage, x, y);
-    }
+    kick_door(x, y, avrg_attrib);
     return ECMD_TIME;
 }
 
