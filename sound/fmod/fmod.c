@@ -92,7 +92,10 @@ fmod_play_usersound(const char *filename, int32_t volume UNUSED, int32_t idx UNU
         if (isPlaying) {
             FMOD_Sound_Release(soundvar);
         }
-        chanIdx++;
+        chanIdx += 1;
+        if (chanIdx == 255) {
+            chanIdx = 0;
+        }
     }
 }
 
