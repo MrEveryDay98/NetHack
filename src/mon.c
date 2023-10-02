@@ -1015,6 +1015,13 @@ movemon_singlemon(struct monst *mtmp)
     if (mon_offmap(mtmp))
         return FALSE;
 
+    if (mtmp->data == &mons[PM_FOG_CLOUD]) {
+        NhRegion *reg = visible_region_at(mtmp->mx, mtmp->my);
+
+        if (!reg)
+            create_gas_cloud(mtmp->mx, mtmp->my, 1, 0); /* harmless vapor */
+    }
+
     /* Find a monster that we have not treated yet. */
     if (mtmp->movement < NORMAL_SPEED)
         return FALSE;
@@ -2794,6 +2801,9 @@ mondead(struct monst *mtmp)
 
     if (be_sad)
         You("have a sad feeling for a moment, then it passes.");
+
+    if (mtmp->data == &mons[PM_STEAM_VORTEX])
+        create_gas_cloud(mtmp->mx, mtmp->my, rn2(10) + 5, 0); /* harmless */
 
     /* dead vault guard is actually kept at coordinate <0,0> until
        his temporary corridor to/from the vault has been removed;
