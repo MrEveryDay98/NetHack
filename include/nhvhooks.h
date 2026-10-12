@@ -24,10 +24,22 @@ extern struct monst *nhv_mon_melee_target(struct monst *);
 extern boolean nhv_grid_mover(struct monst *);
 /* monmove.c: move mtmp one square as its own movement would */
 extern int nhv_mon_step(struct monst *, coordxy, coordxy);
+extern boolean nhv_mon_keeps_distance(struct monst *);
 /* extended commands used by the host */
 extern int donhvmove(void);
 extern int donhvtick(void);
 extern int donhvattack(void);
+extern int donhvmhit(void);
+extern int donhvmhitm(void);
+extern int donhvmland(void);
+/* missiles (mthrowu.c / nhv_free.c) */
+extern void nhv_missile_launch(struct monst *, struct obj *, coordxy, coordxy,
+                               int);
+extern boolean nhv_missile_lined_up(struct monst *);
+extern int nhv_missile_hits_hero(struct monst *, struct obj *, coordxy,
+                                 coordxy);
+extern boolean nhv_missile_hits_mon(struct monst *, struct obj *, int);
+extern void nhv_missile_lands(struct obj *, coordxy, coordxy);
 #endif
 
 #endif /* NHVHOOKS_H */

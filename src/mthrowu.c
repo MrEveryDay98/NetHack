@@ -642,6 +642,17 @@ m_throw(
     }
     gm.mesg_given = 0; /* a 'missile misses' message has not yet been shown */
 
+#ifdef NHV_FREEMOVE
+    /* free movement: a missile aimed at the hero flies through the 3D
+       world, where it can be dodged; the host reports what it hits or
+       where it lands (nhv_missile_hits_hero() etc. below) */
+    if (nhv_freemove && !gm.mtarget && !tethered_weapon && (dx || dy)) {
+        nhv_missile_launch(mon, singleobj, x, y, range);
+        gt.thrownobj = 0;
+        return;
+    }
+#endif
+
     /* Note: drop_throw may destroy singleobj.  Since obj must be destroyed
      * early to avoid the dagger bug, anyone who modifies this code should
      * be careful not to use either one after it's been freed.
@@ -1029,7 +1040,11 @@ spitmm(struct monst *mtmp, struct attack *mattk, struct monst *mtarg)
         }
         return M_ATTK_MISS;
     }
-    if (m_lined_up(mtarg, mtmp)) {
+    if (
+#ifdef NHV_FREEMOVE
+        (mtarg == &gy.youmonst) ? nhv_missile_lined_up(mtmp) :
+#endif
+        m_lined_up(mtarg, mtmp)) {
         boolean utarg = (mtarg == &gy.youmonst);
         coordxy tx = utarg ? mtmp->mux : mtarg->mx;
         coordxy ty = utarg ? mtmp->muy : mtarg->my;
@@ -1252,7 +1267,12 @@ thrwmu(struct monst *mtmp)
      * going away, you are probably hurt or running.  Give
      * chase, but if you are getting too far away, throw.
      */
-    if (!lined_up(mtmp)
+    if (
+#ifdef NHV_FREEMOVE
+        !nhv_missile_lined_up(mtmp)
+#else
+        !lined_up(mtmp)
+#endif
         || (URETREATING(x, y)
             && (!always_toss
                 && rn2(BOLT_LIM - distmin(x, y, mtmp->mux, mtmp->muy)))))
@@ -1557,5 +1577,146 @@ hits_bars(
 
     return hits;
 }
+
+#ifdef NHV_FREEMOVE
+/* NetHack Voxel: can mtmp shoot at the hero? With free movement any clear
+   line of sight will do, not just the eight grid directions. */
+boolean
+nhv_missile_lined_up(struct monst *mtmp)
+{
+    if (nhv_freemove && !nhv_grid_mover(mtmp)) {
+        if (!m_canseeu(mtmp)
+            || dist2(mtmp->mx, mtmp->my, u.ux, u.uy) > BOLT_LIM * BOLT_LIM
+            || !clear_path(mtmp->mx, mtmp->my, u.ux, u.uy))
+            return FALSE;
+        gt.tbx = mtmp->mux - mtmp->mx;
+        gt.tby = mtmp->muy - mtmp->my;
+        return (gt.tbx || gt.tby) ? TRUE : FALSE;
+    }
+    return lined_up(mtmp);
+}
+
+/* A missile in flight reached the hero's body. mon is the thrower (may
+   be null if it died); <lx,ly> is where it was launched from.
+   Returns 1 = hit, 0 = missed (the to-hit roll failed: it flies on),
+   2 = stopped without hitting (caught, ...). */
+int
+nhv_missile_hits_hero(
+    struct monst *mon, struct obj *singleobj, coordxy lx, coordxy ly)
+{
+    int hitu = 0, oldumort, blindinc = 0;
+
+    gb.bhitpos.x = u.ux, gb.bhitpos.y = u.uy;
+    gt.thrownobj = singleobj;
+    if (gm.multi)
+        nomul(0);
+    if (mon && singleobj->oclass == GEM_CLASS && ucatchgem(singleobj, mon)) {
+        gt.thrownobj = 0;
+        return 2;
+    }
+    if (u_catch_thrown_obj(singleobj)) {
+        gt.thrownobj = 0;
+        return 2;
+    }
+    if (singleobj->oclass == POTION_CLASS) {
+        potionhit(&gy.youmonst, singleobj, POTHIT_MONST_THROW);
+        gt.thrownobj = 0;
+        return 1;
+    }
+    oldumort = u.umortality;
+    switch (singleobj->otyp) {
+    case EGG:
+    case CREAM_PIE:
+    case BLINDING_VENOM:
+        hitu = thitu(8, 0, &singleobj, (char *) 0);
+        break;
+    default: {
+        int dam, hitv;
+
+        dam = dmgval(singleobj, &gy.youmonst);
+        hitv = 3 - distmin(u.ux, u.uy, lx, ly);
+        if (hitv < -4)
+            hitv = -4;
+        if (mon && is_elf(mon->data)
+            && objects[singleobj->otyp].oc_skill == -P_BOW) {
+            hitv++;
+            if (MON_WEP(mon) && MON_WEP(mon)->otyp == ELVEN_BOW)
+                hitv++;
+            if (singleobj->otyp == ELVEN_ARROW)
+                dam++;
+        }
+        if (bigmonst(gy.youmonst.data))
+            hitv++;
+        hitv += 8 + singleobj->spe;
+        if (dam < 1)
+            dam = 1;
+        if (singleobj->otyp != ACID_VENOM)
+            dam = Maybe_Half_Phys(dam);
+        hitu = thitu(hitv, dam, &singleobj, (char *) 0);
+    }
+    }
+    if (!singleobj) { /* used up */
+        gt.thrownobj = 0;
+        return hitu ? 1 : 2;
+    }
+    if (hitu && singleobj->opoisoned && is_poisonable(singleobj)) {
+        char onmbuf[BUFSZ], knmbuf[BUFSZ];
+
+        Strcpy(onmbuf, xname(singleobj));
+        Strcpy(knmbuf, killer_xname(singleobj));
+        poisoned(onmbuf, A_STR, knmbuf,
+                 (u.umortality > oldumort) ? 0 : 10, TRUE);
+    }
+    if (hitu && can_blnd((struct monst *) 0, &gy.youmonst,
+                         (uchar) ((singleobj->otyp == BLINDING_VENOM)
+                                  ? AT_SPIT : AT_WEAP), singleobj)) {
+        blindinc = rnd(25);
+        if (singleobj->otyp == CREAM_PIE) {
+            if (!Blind)
+                pline("Yecch!  You've been creamed.");
+        } else if (singleobj->otyp == BLINDING_VENOM) {
+            if (!Blind)
+                pline_The("venom blinds you.");
+        }
+    }
+    if (hitu && singleobj->otyp == EGG) {
+        if (!Stoned && !Stone_resistance
+            && !(poly_when_stoned(gy.youmonst.data)
+                 && polymon(PM_STONE_GOLEM)))
+            make_stoned(5L, (char *) 0, KILLED_BY, "");
+    }
+    stop_occupation();
+    if (hitu)
+        (void) drop_throw(singleobj, hitu, u.ux, u.uy);
+    if (blindinc) {
+        u.ucreamed += blindinc;
+        make_blinded(BlindedTimeout + (long) blindinc, FALSE);
+    }
+    gt.thrownobj = 0;
+    return hitu ? 1 : 0;
+}
+
+/* missile in flight hits monster mtmp; TRUE if it stopped there */
+boolean
+nhv_missile_hits_mon(struct monst *mtmp, struct obj *obj, int range)
+{
+    boolean stopped;
+
+    gt.thrownobj = obj;
+    gb.bhitpos.x = mtmp->mx, gb.bhitpos.y = mtmp->my;
+    stopped = ohitmon(mtmp, obj, range, TRUE);
+    gt.thrownobj = 0;
+    return stopped;
+}
+
+/* missile in flight comes down at <x,y> */
+void
+nhv_missile_lands(struct obj *obj, coordxy x, coordxy y)
+{
+    gt.thrownobj = obj;
+    (void) drop_throw(obj, 0, x, y);
+    gt.thrownobj = 0;
+}
+#endif /* NHV_FREEMOVE */
 
 /*mthrowu.c*/

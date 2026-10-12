@@ -2469,6 +2469,15 @@ nhv_mon_step(struct monst *mtmp, coordxy nx, coordxy ny)
     return postmov(mtmp, ptr, omx, omy, MMOVE_MOVED, seenflgs, can_tunnel,
                    can_unlock, can_open);
 }
+
+/* would mtmp rather keep its distance from the hero (archers, polearm
+   users, ranged attackers)? */
+boolean
+nhv_mon_keeps_distance(struct monst *mtmp)
+{
+    return m_balks_at_approaching(1, mtmp, (int *) 0, (int *) 0) < 0;
+}
+
 #endif /* NHV_FREEMOVE */
 
 /*monmove.c*/
