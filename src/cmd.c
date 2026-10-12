@@ -1772,6 +1772,14 @@ struct ext_func_tab extcmdlist[] = {
               domonability, IFBURIED | AUTOCOMPLETE, NULL },
     { M('n'), "name", "same as call; name a monster or object or object type",
               docallcmd, IFBURIED | AUTOCOMPLETE | GENERALCMD, NULL },
+#ifdef NHV_FREEMOVE
+    { ' ',   "nhvattack", "(NetHack Voxel) attack a monster within reach",
+              donhvattack, 0, NULL },
+    { ' ',   "nhvmove", "(NetHack Voxel) step onto an adjacent square",
+              donhvmove, IFBURIED, NULL },
+    { ' ',   "nhvtick", "(NetHack Voxel) let time pass",
+              donhvtick, IFBURIED, NULL },
+#endif
     { M('o'), "offer", "offer a sacrifice to the gods",
               dosacrifice, AUTOCOMPLETE | CMD_M_PREFIX, NULL },
     { 'o',    "open", "open a door",

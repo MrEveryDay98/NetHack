@@ -1568,5 +1568,7 @@ typedef uint32_t mmflags_nht;     /* makemon MM_ flags */
 
 #endif  /* RECOVER_C */
 
+#include "nhvhooks.h"
+
 #endif /* HACK_H */
 

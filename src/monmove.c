@@ -540,6 +540,14 @@ distfleeck(
     *inrange = (dist2(mtmp->mx, mtmp->my, mtmp->mux, mtmp->muy)
                 <= (BOLT_LIM * BOLT_LIM));
     *nearby = *inrange && monnear(mtmp, mtmp->mux, mtmp->muy);
+#ifdef NHV_FREEMOVE
+    if (nhv_freemove && !nhv_grid_mover(mtmp)) {
+        int reach = nhv_mon_in_reach(mtmp);
+
+        if (reach >= 0)
+            *nearby = *inrange && reach;
+    }
+#endif
 
     /* Note: if your image is displaced, the monster sees the Elbereth
      * at your displaced position, thus never attacking your displaced
@@ -1766,6 +1774,25 @@ m_move(struct monst *mtmp, int after)
     can_unlock = ((can_open && monhaskey(mtmp, TRUE))
                   || mtmp->iswiz || is_rider(ptr));
     /* doorbuster = is_giant(ptr); */
+#ifdef NHV_FREEMOVE
+    /* free movement: the host moves the monster; here it may only fight
+       another monster the host put within its reach */
+    if (nhv_freemove && !nhv_grid_mover(mtmp)) {
+        struct monst *mtarg = nhv_mon_melee_target(mtmp);
+
+        if (mtarg && mtarg != mtmp && !DEADMONSTER(mtarg)) {
+            int mres;
+
+            gb.bhitpos.x = mtarg->mx, gb.bhitpos.y = mtarg->my;
+            gn.notonhead = FALSE;
+            mres = mattackm(mtmp, mtarg);
+            if (mres & M_ATTK_AGR_DIED)
+                return MMOVE_DIED;
+            return MMOVE_DONE;
+        }
+        return MMOVE_NOTHING;
+    }
+#endif
     if (mtmp->wormno)
         goto not_special;
     /* my dog gets special treatment */
@@ -2392,5 +2419,56 @@ vamp_shift(
     }
     return reslt;
 }
+
+#ifdef NHV_FREEMOVE
+/* NetHack Voxel: the host moved mtmp's body into the adjacent square
+   <nx,ny>; make NetHack follow along with the usual side effects (doors,
+   traps, picking things up). Never attacks: walking is not fighting.
+   Returns MMOVE_MOVED, MMOVE_NOTHING (square refused) or MMOVE_DIED. */
+int
+nhv_mon_step(struct monst *mtmp, coordxy nx, coordxy ny)
+{
+    struct mfndposdata mfp;
+    struct permonst *ptr = mtmp->data;
+    coordxy omx = mtmp->mx, omy = mtmp->my;
+    boolean can_tunnel = FALSE, can_open, can_unlock;
+    unsigned seenflgs;
+    long flag;
+    int i, chi = -1;
+
+    if (DEADMONSTER(mtmp) || !isok(nx, ny) || distmin(omx, omy, nx, ny) != 1)
+        return MMOVE_NOTHING;
+    if (helpless(mtmp) || mtmp->mtrapped || mtmp->meating)
+        return MMOVE_NOTHING;
+    if (u_at(nx, ny) || m_at(nx, ny))
+        return MMOVE_NOTHING;
+    if (!Is_rogue_level(&u.uz))
+        can_tunnel = tunnels(ptr);
+    can_open = !(nohands(ptr) || verysmall(ptr));
+    can_unlock = ((can_open && monhaskey(mtmp, TRUE))
+                  || mtmp->iswiz || is_rider(ptr));
+    seenflgs = (canseemon(mtmp) ? 1 : 0) | (canspotmon(mtmp) ? 2 : 0);
+    flag = mon_allowflags(mtmp) & ~(ALLOW_U | ALLOW_M | ALLOW_MDISP);
+    (void) mfndpos(mtmp, &mfp, flag);
+    for (i = 0; i < mfp.cnt; i++)
+        if (mfp.poss[i].x == nx && mfp.poss[i].y == ny) {
+            chi = i;
+            break;
+        }
+    if (chi < 0 || (mfp.info[chi] & ALLOW_ROCK))
+        return MMOVE_NOTHING;
+    if (!m_in_out_region(mtmp, nx, ny))
+        return MMOVE_NOTHING;
+
+    m_postmove_effect(mtmp);
+    remove_monster(omx, omy);
+    place_monster(mtmp, nx, ny);
+    msg_mon_movement(mtmp, omx, omy);
+    maybe_unhide_at(nx, ny);
+    mon_track_add(mtmp, omx, omy);
+    return postmov(mtmp, ptr, omx, omy, MMOVE_MOVED, seenflgs, can_tunnel,
+                   can_unlock, can_open);
+}
+#endif /* NHV_FREEMOVE */
 
 /*monmove.c*/

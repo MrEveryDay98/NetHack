@@ -454,6 +454,14 @@ calc_mattacku_vars(
     *range2 = !monnear(mtmp, mtmp->mux, mtmp->muy);
     *foundyou = u_at(mtmp->mux, mtmp->muy);
     *youseeit = canseemon(mtmp);
+#ifdef NHV_FREEMOVE
+    if (nhv_freemove && !nhv_grid_mover(mtmp)) {
+        int reach = nhv_mon_in_reach(mtmp);
+
+        if (reach >= 0)
+            *ranged = *range2 = !reach;
+    }
+#endif
 
     /* do_attack() uses bhitpos to set/clear notonhead; do likewise here */
     gb.bhitpos.x = u.ux, gb.bhitpos.y = u.uy;
