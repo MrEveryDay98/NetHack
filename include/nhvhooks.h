@@ -63,6 +63,7 @@ extern void nhv_container_event(const char *, unsigned);
 extern int donhvloot(void);
 extern int donhvcontin(void);
 extern int donhvcontout(void);
+extern int donhvhurt(void);
 #endif
 
 /* sound hook: an event the sound configuration can attach a sound to */

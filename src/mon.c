@@ -3096,6 +3096,10 @@ mondead(struct monst *mtmp)
     /* vampire in bat/fog/wolf form reverts to vampire instead of dying */
     if (is_vampshifter(mtmp) && vamprises(mtmp))
         return;
+#ifdef NHV_FREEMOVE
+    /* NetHack Voxel: the host draws the death (blood) where the body was */
+    nhv_combat_event("die", mtmp->m_id, 0, 0);
+#endif
 
     if (be_sad)
         You("have a sad feeling for a moment, then it passes.");

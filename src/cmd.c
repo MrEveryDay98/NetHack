@@ -1789,6 +1789,8 @@ struct ext_func_tab extcmdlist[] = {
               donhvcontout, 0, NULL },
     { '\0',   "nhvloot", "(NetHack Voxel) open a container",
               donhvloot, 0, NULL },
+    { '\0',   "nhvhurt", "(NetHack Voxel) a block hurt you",
+              donhvhurt, IFBURIED, NULL },
     { '\0',   "nhvrayhit", "(NetHack Voxel) a ray reached a body",
               donhvrayhit, IFBURIED, NULL },
     { '\0',   "nhvraysq", "(NetHack Voxel) a ray crossed squares",

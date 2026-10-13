@@ -1963,6 +1963,12 @@ trapeffect_pit(
             exercise(A_STR, FALSE);
             exercise(A_DEX, FALSE);
         }
+#ifdef NHV_FREEMOVE
+        /* NetHack Voxel: the pit is a real hole; you walk about in it and
+           climb out at its edge (Space), so it doesn't hold you */
+        if (nhv_freemove && u.utrap && u.utraptype == TT_PIT)
+            reset_utrap(FALSE);
+#endif
     } else {
         boolean in_sight = canseemon(mtmp) || (mtmp == u.usteed);
         boolean trapkilled = FALSE;
