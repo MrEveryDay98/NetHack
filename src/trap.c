@@ -1887,7 +1887,12 @@ trapeffect_pit(
                 Strcpy(verbbuf,
                        !plunged ? "fall" : (Flying ? "dive" : "plunge"));
             }
-            if (*verbbuf)
+            if (*verbbuf
+#ifdef NHV_FREEMOVE
+                /* (NetHack Voxel says this when you land on the bottom) */
+                && !nhv_freemove
+#endif
+                )
                 You("%s into %s pit!", verbbuf, a_your[trap->madeby_u]);
         }
         /* wumpus reference */
@@ -1901,7 +1906,11 @@ trapeffect_pit(
         if (relevant_spikes && wearing_iron_shoes(mtmp)) {
             pline("%s protects you from the sharp iron spikes.", Yname2(uarmf));
             relevant_spikes = FALSE;
-        } else if (relevant_spikes) {
+        } else if (relevant_spikes
+#ifdef NHV_FREEMOVE
+                   && !nhv_freemove /* (the spikes are blocks you touch) */
+#endif
+                   ) {
             const char *predicament = "on a set of sharp iron spikes";
 
             if (u.usteed) {
@@ -1919,6 +1928,14 @@ trapeffect_pit(
          */
         set_utrap((unsigned) rn1(6, 2), TT_PIT);
         if (!steedintrap(trap, (struct obj *) 0)) {
+#ifdef NHV_FREEMOVE
+            /* NetHack Voxel: walking into the pit's square isn't falling in.
+               The game hurts you when you really drop to the bottom (a
+               plain pit) or touch the spikes (a spiked pit: spike blocks) */
+            if (nhv_freemove) {
+                ;
+            } else
+#endif
             if (relevant_spikes) {
                 int oldumort = u.umortality;
 
