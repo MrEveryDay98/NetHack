@@ -1757,6 +1757,7 @@ hmon_hitmon(
     int thrown, /* HMON_xxx (0 => hand-to-hand, other => ranged) */
     int dieroll)
 {
+    NHV_HOOK("hero_hits");
     struct _hitmon_data hmd;
     boolean maybe_knockback = FALSE;
 
@@ -5200,6 +5201,7 @@ missum(
     struct attack *mattk,
     boolean wouldhavehit)
 {
+    NHV_HOOK("hero_misses");
     if (wouldhavehit) /* monk is missing due to penalty for wearing suit */
         Your("armor is rather cumbersome...");
 

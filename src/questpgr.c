@@ -589,6 +589,9 @@ com_pager_core(
         }
     }
 
+#ifdef NHV_FREEMOVE
+    nhv_quest_event(section, msgid);
+#endif
     if (output == 0 || output == 1)
         deliver_by_pline(text);
     else

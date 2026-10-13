@@ -867,7 +867,7 @@ doopen_indir(coordxy x, coordxy y)
             mesg = " is already open";
             break;
         default:
-            mesg = " is locked";
+            mesg = " is locked", NHV_HOOK("door_locked");
             locked = TRUE;
             break;
         }
@@ -916,7 +916,7 @@ doopen_indir(coordxy x, coordxy y)
     } else {
         exercise(A_STR, TRUE);
         set_msg_xy(cc.x, cc.y);
-        pline_The("door resists!");
+        NHV_HOOK("door_resists"), pline_The("door resists!");
     }
 
     return ECMD_TIME;
@@ -1037,13 +1037,13 @@ doclose(void)
         }
         if (u.usteed
             || rn2(25) < (ACURRSTR + ACURR(A_DEX) + ACURR(A_CON)) / 3) {
-            pline_The("door closes.");
+            NHV_HOOK("door_close"), pline_The("door closes.");
             door->doormask = D_CLOSED;
             feel_newsym(x, y); /* the hero knows she closed it */
             block_point(x, y); /* vision:  no longer see there */
         } else {
             exercise(A_STR, TRUE);
-            pline_The("door resists!");
+            NHV_HOOK("door_resists"), pline_The("door resists!");
         }
     }
 

@@ -299,6 +299,7 @@ digcheck_fail_message(enum digcheck_result digresult, struct monst *madeby,
 staticfn int
 dig(void)
 {
+    NHV_HOOK("dig");
     struct rm *lev;
     coordxy dpx = svc.context.digging.pos.x, dpy = svc.context.digging.pos.y;
     boolean ispick = uwep && is_pick(uwep);
@@ -884,6 +885,7 @@ RESTORE_WARNING_FORMAT_NONLITERAL
 boolean
 dighole(boolean pit_only, boolean by_magic, coord *cc)
 {
+    NHV_HOOK("dig_hole");
     struct trap *ttmp;
     struct rm *lev;
     struct obj *boulder_here;

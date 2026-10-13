@@ -467,6 +467,7 @@ RESTORE_WARNING_FORMAT_NONLITERAL
 int
 study_book(struct obj *spellbook)
 {
+    NHV_HOOK("study_book");
     int booktype = spellbook->otyp, i;
     boolean confused = (Confusion != 0);
     boolean too_hard = FALSE;
@@ -1384,6 +1385,7 @@ spelleffects_check(int spell, int *res, int *energy)
 int
 spelleffects(int spell_otyp, boolean atme, boolean force)
 {
+    NHV_HOOK("spell_cast");
     int spell = force ? spell_otyp : spell_idx(spell_otyp);
     int energy = 0, damage, n;
     int otyp, skill, role_skill, res = ECMD_OK;

@@ -841,6 +841,7 @@ tele_to_rnd_pet(void)
 void
 tele(void)
 {
+    NHV_HOOK("teleport");
     scrolltele((struct obj *) 0);
 }
 

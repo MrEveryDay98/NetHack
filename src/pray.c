@@ -1070,6 +1070,7 @@ give_spell(void)
 staticfn void
 pleased(aligntyp g_align)
 {
+    NHV_HOOK("prayer_answered");
     /* don't use p_trouble, worst trouble may get fixed while praying */
     int trouble = in_trouble(); /* what's your worst difficulty? */
     int pat_on_head = 0, kick_on_butt;
@@ -2198,6 +2199,7 @@ pray_revive(void)
 int
 dopray(void)
 {
+    NHV_HOOK("pray");
     boolean ok;
 
     /*

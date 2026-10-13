@@ -317,6 +317,9 @@ mattackm(
         && magr->my != mdef->my)
         return M_ATTK_MISS;
 
+#ifdef NHV_FREEMOVE
+    nhv_combat_event("attack", magr->m_id, mdef->m_id, 1);
+#endif
     /* Calculate the armour class differential. */
     tmp = find_mac(mdef) + magr->m_lev;
     if (mdef->mconf || helpless(mdef)) {

@@ -342,6 +342,7 @@ worn_item_removal(
 int
 steal(struct monst *mtmp, char *objnambuf)
 {
+    NHV_HOOK("item_stolen");
     struct obj *otmp;
     char Monnambuf[BUFSZ];
     int tmp, could_petrify, armordelay, olddelay, icnt,

@@ -1588,6 +1588,7 @@ do_vicinity_map(
 void
 cvt_sdoor_to_door(struct rm *lev)
 {
+    NHV_HOOK("secret_found");
     int newmask = lev->doormask & ~WM_MASK;
 
     if (Is_rogue_level(&u.uz)) {

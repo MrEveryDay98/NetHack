@@ -750,6 +750,7 @@ deserted_shop(/*const*/ char *enterstring)
 void
 u_entered_shop(char *enterstring)
 {
+    NHV_HOOK("shop_enter");
     static char empty_shops[5];
     struct monst *shkp;
     struct eshk *eshkp;
@@ -2225,6 +2226,7 @@ dopayobj(
     boolean itemize,
     boolean unseen)
 {
+    NHV_HOOK("shop_buy");
     long ltmp, quan, save_quan;
     int buy;
     boolean consumed = (which == 0);

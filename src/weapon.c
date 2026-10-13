@@ -75,7 +75,7 @@ static NEARDATA const char kebabable[] = {
 staticfn void
 give_may_advance_msg(int skill)
 {
-    You_feel("more confident in your %sskills.",
+    NHV_HOOK("skill_ready"), You_feel("more confident in your %sskills.",
              (skill == P_NONE) ? ""
                  : (skill <= P_LAST_WEAPON) ? "weapon "
                      : (skill <= P_LAST_SPELL) ? "spell casting "
@@ -1197,6 +1197,7 @@ peaked_skill(int skill)
 staticfn void
 skill_advance(int skill)
 {
+    NHV_HOOK("skill_up");
     u.weapon_slots -= slots_required(skill);
     P_SKILL(skill)++;
     u.skill_record[u.skills_advanced++] = skill;

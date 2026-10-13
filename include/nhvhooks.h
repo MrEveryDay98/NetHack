@@ -25,6 +25,11 @@ extern boolean nhv_grid_mover(struct monst *);
 /* monmove.c: move mtmp one square as its own movement would */
 extern int nhv_mon_step(struct monst *, coordxy, coordxy);
 extern boolean nhv_mon_keeps_distance(struct monst *);
+/* combat feedback for the host: kind "attack", attacker, target (0 =
+   hero), melee (attacker can reach the target) */
+extern void nhv_combat_event(const char *, unsigned, unsigned, int);
+/* quest message about to be shown (nhv_sound.c) */
+extern void nhv_quest_event(const char *, const char *);
 /* extended commands used by the host */
 extern int donhvmove(void);
 extern int donhvtick(void);
@@ -40,6 +45,15 @@ extern int nhv_missile_hits_hero(struct monst *, struct obj *, coordxy,
                                  coordxy);
 extern boolean nhv_missile_hits_mon(struct monst *, struct obj *, int);
 extern void nhv_missile_lands(struct obj *, coordxy, coordxy);
+#endif
+
+/* sound hook: an event the sound configuration can attach a sound to */
+#ifdef NHV_FREEMOVE
+extern void nhv_sound_hook(const char *);
+extern void nhv_trap_hook(int);
+#define NHV_HOOK(id) nhv_sound_hook(id)
+#else
+#define NHV_HOOK(id) ((void) 0)
 #endif
 
 #endif /* NHVHOOKS_H */

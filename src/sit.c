@@ -399,6 +399,7 @@ lay_an_egg(void)
 int
 dosit(void)
 {
+    NHV_HOOK("sit");
     static const char sit_message[] = "sit on the %s.";
     struct trap *trap = t_at(u.ux, u.uy);
     int typ = levl[u.ux][u.uy].typ;

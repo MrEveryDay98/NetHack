@@ -3478,6 +3478,7 @@ xkilled(
     struct monst *mtmp,
     int xkill_flags) /* 1: suppress mesg, 2: suppress corpse, 4: pacifist */
 {
+    NHV_HOOK("monster_killed");
     int tmp, mndx;
     coordxy x = mtmp->mx, y = mtmp->my;
     struct monst museum = cg.zeromonst;

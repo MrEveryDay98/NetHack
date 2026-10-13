@@ -309,6 +309,7 @@ pluslvl(
                    * False: potion of gain level or wraith corpse
                    *        or wizard mode #levelchange */
 {
+    NHV_HOOK("level_up");
     int hpinc, eninc;
 
     if (!incr)

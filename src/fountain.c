@@ -277,7 +277,7 @@ drinkfountain(void)
     }
 
     if (fate < 10) {
-        pline_The("cool draught refreshes you.");
+        NHV_HOOK("fountain_refresh"), pline_The("cool draught refreshes you.");
         u.uhunger += rnd(10); /* don't choke on water */
         newuhs(FALSE);
         if (mgkftn)

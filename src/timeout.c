@@ -950,6 +950,7 @@ nh_timeout(void)
 void
 fall_asleep(int how_long, boolean wakeup_msg)
 {
+    NHV_HOOK("fall_asleep");
     stop_occupation();
     nomul(how_long);
     gm.multi_reason = "sleeping";

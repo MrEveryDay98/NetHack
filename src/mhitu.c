@@ -28,6 +28,7 @@ staticfn int passiveum(struct permonst *, struct monst *, struct attack *);
 void
 hitmsg(struct monst *mtmp, struct attack *mattk)
 {
+    NHV_HOOK("monster_hits_you");
     int compat;
     const char *verb = 0, *again, *punct = "!";
     char *Monst_name = Monnam(mtmp);
@@ -84,6 +85,7 @@ hitmsg(struct monst *mtmp, struct attack *mattk)
 staticfn void
 missmu(struct monst *mtmp, boolean nearmiss, struct attack *mattk)
 {
+    NHV_HOOK("monster_misses_you");
     gh.hitmsg_mid = 0;
     gh.hitmsg_prev = NULL;
 
@@ -516,6 +518,9 @@ mattacku(struct monst *mtmp)
             skipnonmagc = FALSE;
 
     calc_mattacku_vars(mtmp, &ranged, &range2, &foundyou, &youseeit);
+#ifdef NHV_FREEMOVE
+    nhv_combat_event("attack", mtmp->m_id, 0, !range2);
+#endif
 
     if (!ranged)
         nomul(0);

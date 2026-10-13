@@ -543,6 +543,7 @@ eatfood(void)
 staticfn void
 done_eating(boolean message)
 {
+    NHV_HOOK("eat_done");
     struct obj *piece = svc.context.victual.piece;
 
     piece->in_use = TRUE;
@@ -1812,7 +1813,7 @@ Hear_again(void)
 staticfn int
 rottenfood(struct obj *obj)
 {
-    pline("Blecch!  %s %s!",
+    NHV_HOOK("eat_rotten"), pline("Blecch!  %s %s!",
           is_rottable(obj) ? "Rotten" : "Awful", foodword(obj));
     if (!rn2(4)) {
         if (Hallucination)
@@ -2135,7 +2136,7 @@ fprefx(struct obj *otmp)
             pline(Hallucination ? "Tastes great!  Less filling!"
                                 : "Mmm, tripe... not bad!");
         } else {
-            pline("Yak - dog food!");
+            NHV_HOOK("eat_dog_food"), pline("Yak - dog food!");
             more_experienced(1, 0);
             newexplevel();
             /* not cannibalism, but we use similar criteria
@@ -3735,6 +3736,7 @@ floorfood(
 void
 vomit(void) /* A good idea from David Neves */
 {
+    NHV_HOOK("vomit");
     boolean spewed = FALSE;
 
     if (cantvomit(gy.youmonst.data)) {

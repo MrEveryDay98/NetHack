@@ -2995,6 +2995,9 @@ trapeffect_selector(
 void
 dotrap(struct trap *trap, unsigned trflags)
 {
+#ifdef NHV_FREEMOVE
+    nhv_trap_hook(trap->ttyp);
+#endif
     int ttype = trap->ttyp;
     boolean already_seen = trap->tseen,
             forcetrap = ((trflags & FORCETRAP) != 0
@@ -5058,6 +5061,7 @@ rescued_from_terrain(int how)
 boolean
 drown(void)
 {
+    NHV_HOOK("fall_into_water");
     const char *pool_of_water;
     boolean inpool_ok = FALSE;
     int i;
