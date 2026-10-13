@@ -8,6 +8,9 @@
 staticfn int monmulti(struct monst *, struct obj *, struct obj *);
 staticfn void monshoot(struct monst *, struct obj *, struct obj *);
 staticfn boolean ucatchgem(struct obj *, struct monst *);
+#ifdef NHV_FREEMOVE
+staticfn boolean nhv_free_lined_up(struct monst *);
+#endif
 staticfn boolean u_catch_thrown_obj(struct obj *);
 staticfn const char *breathwep_name(int);
 staticfn boolean drop_throw(struct obj *, boolean, coordxy, coordxy);
@@ -1395,6 +1398,10 @@ linedup(
 staticfn int
 m_lined_up(struct monst *mtarg, struct monst *mtmp)
 {
+#ifdef NHV_FREEMOVE
+    if (nhv_freemove && mtarg == &gy.youmonst && !nhv_grid_mover(mtmp))
+        return nhv_free_lined_up(mtmp);
+#endif
     boolean utarget = (mtarg == &gy.youmonst);
     coordxy tx = utarget ? mtmp->mux : mtarg->mx;
     coordxy ty = utarget ? mtmp->muy : mtarg->my;
@@ -1414,6 +1421,7 @@ m_lined_up(struct monst *mtarg, struct monst *mtmp)
 
 
 /* is mtmp in position to use ranged attack on hero? */
+
 boolean
 lined_up(struct monst *mtmp)
 {
@@ -1584,7 +1592,14 @@ hits_bars(
 boolean
 nhv_missile_lined_up(struct monst *mtmp)
 {
-    if (nhv_freemove && !nhv_grid_mover(mtmp)) {
+    return lined_up(mtmp);
+}
+
+/* the free-movement version of m_lined_up() for the hero as target */
+staticfn boolean
+nhv_free_lined_up(struct monst *mtmp)
+{
+    {
         if (!m_canseeu(mtmp)
             || dist2(mtmp->mx, mtmp->my, u.ux, u.uy) > BOLT_LIM * BOLT_LIM
             || !clear_path(mtmp->mx, mtmp->my, u.ux, u.uy))
@@ -1593,7 +1608,6 @@ nhv_missile_lined_up(struct monst *mtmp)
         gt.tby = mtmp->muy - mtmp->my;
         return (gt.tbx || gt.tby) ? TRUE : FALSE;
     }
-    return lined_up(mtmp);
 }
 
 /* A missile in flight reached the hero's body. mon is the thrower (may

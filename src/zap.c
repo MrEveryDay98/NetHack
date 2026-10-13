@@ -4823,6 +4823,16 @@ dobuzz(
     range = rn1(7, 7);
     if (dx == 0 && dy == 0)
         range = 1;
+#ifdef NHV_FREEMOVE
+    /* free movement: the ray flies through the 3D world (see
+       nhv_ray_hits_mon() etc.); vertical zaps and the Plane of Air stay */
+    if (nhv_freemove && (dx || dy) && !Is_airlevel(&u.uz)) {
+        nhv_ray_launch(type, nd, sx, sy, dx, dy, range, sayhit, saymiss,
+                       forcemiss, (type < 0 && gb.buzzer) ? gb.buzzer->m_id
+                                                          : 0);
+        return;
+    }
+#endif
     save_bhitpos = gb.bhitpos;
 
     tmp_at(DISP_BEAM, zapdir_to_glyph(dx, dy, hdmgtype));
@@ -6443,5 +6453,156 @@ flash_str(
     }
     return fltxt;
 }
+
+#ifdef NHV_FREEMOVE
+/*
+ * NetHack Voxel: rays (wands, spells, breath) fly through the 3D world.
+ * dobuzz() hands a ray to the host, which flies and bounces it and calls
+ * these as it reaches things. They are the pieces of dobuzz()'s loop.
+ */
+
+/* ray reaches monster mon. Returns 0 missed, 1 hit, 2 reflected (the host
+   turns the ray around), 3 the ray stops here (absorbed). */
+int
+nhv_ray_hits_mon(int type, int nd, struct monst *mon, boolean forcemiss,
+                 boolean sayhit, boolean saymiss)
+{
+    int fltyp = zaptype(type), damgtype = fltyp % 10;
+    int spell_type = is_hero_spell(type) ? SPE_MAGIC_MISSILE + damgtype : 0;
+    struct obj *otmp;
+
+    gb.bhitpos.x = mon->mx, gb.bhitpos.y = mon->my;
+    gn.notonhead = FALSE;
+    if (type >= 0)
+        mon->mstrategy &= ~STRAT_WAITMASK;
+    if (forcemiss || !zap_hit(find_mac(mon), spell_type)) {
+        if (saymiss || (canseemon(mon) && !disguised_as_non_mon(mon)))
+            miss(flash_str(fltyp, FALSE), mon);
+        return 0;
+    }
+    if (mon_reflects(mon, (char *) 0)) {
+        if (cansee(mon->mx, mon->my)) {
+            hit(flash_str(fltyp, FALSE), mon, exclam(0));
+            shieldeff(mon->mx, mon->my);
+            (void) mon_reflects(mon, "But it reflects from %s %s!");
+        }
+        return 2;
+    } else {
+        boolean mon_could_move = mon->mcanmove;
+        int tmp = zhitm(mon, type, nd, &otmp);
+
+        if (is_rider(mon->data) && abs(type) == ZT_BREATH(ZT_DEATH)) {
+            if (canseemon(mon)) {
+                hit(flash_str(fltyp, FALSE), mon, ".");
+                pline("%s disintegrates.", Monnam(mon));
+                pline("%s resurrects!", Monnam(mon));
+            }
+            mon->mhp = mon->mhpmax;
+            return 3;
+        }
+        if (mon->data == &mons[PM_DEATH] && damgtype == ZT_DEATH) {
+            if (canseemon(mon)) {
+                hit(flash_str(fltyp, FALSE), mon, ".");
+                pline("%s absorbs the deadly %s!", Monnam(mon),
+                      type == ZT_BREATH(ZT_DEATH) ? "blast" : "ray");
+                pline("It seems even stronger than before.");
+            }
+            return 3;
+        }
+        if (tmp == MAGIC_COOKIE) { /* disintegration */
+            disintegrate_mon(mon, type, flash_str(fltyp, FALSE));
+        } else if (DEADMONSTER(mon)) {
+            if (type < 0) {
+                monkilled(mon, flash_str(fltyp, FALSE), AD_RBRE);
+            } else {
+                int xkflags = XKILL_GIVEMSG;
+
+                if (damgtype == ZT_FIRE && completelyburns(mon->data))
+                    xkflags |= XKILL_NOCORPSE;
+                xkilled(mon, xkflags);
+            }
+        } else {
+            if (!otmp) {
+                if (sayhit || canseemon(mon))
+                    hit(flash_str(fltyp, FALSE), mon, exclam(tmp));
+            } else {
+                if (canseemon(mon))
+                    pline("%s %s is disintegrated!", s_suffix(Monnam(mon)),
+                          distant_name(otmp, xname));
+                m_useup(mon, otmp);
+            }
+            if (mon_could_move && !mon->mcanmove)
+                slept_monst(mon);
+            if (damgtype != ZT_SLEEP)
+                wakeup(mon, (type >= 0) ? TRUE : FALSE);
+        }
+    }
+    return 1;
+}
+
+/* ray reaches the hero's body; <dx,dy> is its direction of travel.
+   Returns 0 missed, 1 hit, 2 reflected. */
+int
+nhv_ray_hits_hero(int type, int nd, int dx, int dy, boolean forcemiss)
+{
+    int fltyp = zaptype(type), damgtype = fltyp % 10;
+    int r = 0;
+
+    nomul(0);
+    if (!forcemiss && zap_hit((int) u.uac, 0)) {
+        pline_dir(xytodir(-dx, -dy), "%s hits you!",
+                  The(flash_str(fltyp, FALSE)));
+        if (Reflecting) {
+            if (!Blind)
+                (void) ureflects("But %s reflects from your %s!", "it");
+            else
+                pline("For some reason you are not affected.");
+            monstseesu(M_SEEN_REFL);
+            shieldeff(u.ux, u.uy);
+            r = 2;
+        } else {
+            zhitu(type, nd, flash_str(fltyp, TRUE), u.ux, u.uy);
+            monstunseesu(M_SEEN_REFL);
+            r = 1;
+        }
+    } else if (!Blind) {
+        pline("%s whizzes by you!", The(flash_str(fltyp, FALSE)));
+    } else if (damgtype == ZT_LIGHTNING) {
+        Your("%s tingles.", body_part(ARM));
+    }
+    if (damgtype == ZT_LIGHTNING)
+        (void) flashburn((long) d(nd, 50), TRUE);
+    stop_occupation();
+    nomul(0);
+    return r;
+}
+
+/* ray passes over square <x,y>: burn, freeze, melt ... */
+void
+nhv_ray_square(int type, coordxy x, coordxy y, boolean *shopdamage)
+{
+    if (!isok(x, y) || type == ZT_SPELL(ZT_FIRE))
+        return; /* fireballs only act where they explode */
+    gb.bhitpos.x = x, gb.bhitpos.y = y;
+    (void) zap_over_floor(x, y, type, shopdamage, TRUE, 0);
+}
+
+/* ray is done at <x,y>: fireballs explode, shop damage is billed */
+void
+nhv_ray_end(int type, coordxy x, coordxy y, boolean shopdamage)
+{
+    int damgtype = zaptype(type) % 10;
+
+    if (type == ZT_SPELL(ZT_FIRE) && isok(x, y))
+        explode(x, y, type, d(12, 6), 0, EXPL_FIERY);
+    if (shopdamage)
+        pay_for_damage(damgtype == ZT_FIRE ? "burn away"
+                       : damgtype == ZT_COLD ? "shatter"
+                         : damgtype == ZT_ACID ? "damage"
+                           : damgtype == ZT_DEATH ? "disintegrate"
+                             : "destroy",
+                       FALSE);
+}
+#endif /* NHV_FREEMOVE */
 
 /*zap.c*/

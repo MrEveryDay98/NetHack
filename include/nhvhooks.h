@@ -45,6 +45,17 @@ extern int nhv_missile_hits_hero(struct monst *, struct obj *, coordxy,
                                  coordxy);
 extern boolean nhv_missile_hits_mon(struct monst *, struct obj *, int);
 extern void nhv_missile_lands(struct obj *, coordxy, coordxy);
+/* rays (zap.c / nhv_free.c) */
+extern void nhv_ray_launch(int, int, coordxy, coordxy, int, int, int, boolean,
+                           boolean, boolean, unsigned);
+extern int nhv_ray_hits_mon(int, int, struct monst *, boolean, boolean,
+                            boolean);
+extern int nhv_ray_hits_hero(int, int, int, int, boolean);
+extern void nhv_ray_square(int, coordxy, coordxy, boolean *);
+extern void nhv_ray_end(int, coordxy, coordxy, boolean);
+extern int donhvrayhit(void);
+extern int donhvraysq(void);
+extern int donhvrayend(void);
 #endif
 
 /* sound hook: an event the sound configuration can attach a sound to */
