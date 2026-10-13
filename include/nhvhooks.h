@@ -56,6 +56,13 @@ extern void nhv_ray_end(int, coordxy, coordxy, boolean);
 extern int donhvrayhit(void);
 extern int donhvraysq(void);
 extern int donhvrayend(void);
+/* containers in the host's panel (pickup.c / nhv_free.c) */
+extern int nhv_cmd_args[];
+extern struct obj *nhv_find_container(unsigned);
+extern void nhv_container_event(const char *, unsigned);
+extern int donhvloot(void);
+extern int donhvcontin(void);
+extern int donhvcontout(void);
 #endif
 
 /* sound hook: an event the sound configuration can attach a sound to */

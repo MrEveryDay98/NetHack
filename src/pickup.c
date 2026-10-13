@@ -33,6 +33,9 @@ staticfn boolean mbag_explodes(struct obj *, int);
 staticfn boolean is_boh_item_gone(void);
 staticfn void do_boh_explosion(struct obj *, boolean);
 staticfn long boh_loss(struct obj *, boolean);
+#ifdef NHV_FREEMOVE
+static boolean nhv_loot_panel = FALSE, nhv_loot_opened = FALSE;
+#endif
 staticfn int in_container(struct obj *);
 staticfn int out_container(struct obj *);
 staticfn long mbag_item_gone(boolean, struct obj *, boolean);
@@ -3039,6 +3042,16 @@ use_container(
                                 || gi.invent->nobj));
     /* might take something out if container isn't empty */
     outokay = Has_contents(gc.current_container);
+#ifdef NHV_FREEMOVE
+    /* NetHack Voxel: the host shows the open container in its own panel
+       (#nhvloot); items then move with #nhvcontin / #nhvcontout */
+    if (nhv_loot_panel) {
+        gc.current_container->cknown = 1;
+        nhv_loot_opened = TRUE;
+        used = ECMD_TIME; /* opening it takes a move */
+        goto containerdone;
+    }
+#endif
     if (!outokay) /* preformat the empty-container message */
         Sprintf(emptymsg, "%s is %sempty.",
                 Ysimple_name2(gc.current_container),
@@ -4055,3 +4068,113 @@ tipcontainer_checks(
 }
 
 /*pickup.c*/
+
+#ifdef NHV_FREEMOVE
+/* ---------------------------------------------------------------- */
+/* NetHack Voxel: containers handled in the host's two-list panel.
+ * Opening goes through use_container() (locks, chest traps, cursed bags
+ * of holding, Schroedinger's box, shop prices...), and moving an item goes
+ * through in_container() / out_container(), so every rule still applies.
+ * The host hears about it through NHV_EV_CONTAINER events. */
+
+/* a container the hero can reach: carried, or on their square or next to it */
+struct obj *
+nhv_find_container(unsigned id)
+{
+    struct obj *o;
+    int dx, dy;
+
+    if (!id)
+        return (struct obj *) 0;
+    for (o = gi.invent; o; o = o->nobj)
+        if (o->o_id == id && Is_container(o))
+            return o;
+    for (dx = -1; dx <= 1; dx++)
+        for (dy = -1; dy <= 1; dy++) {
+            coordxy x = u.ux + dx, y = u.uy + dy;
+
+            if (!isok(x, y))
+                continue;
+            for (o = svl.level.objects[x][y]; o; o = o->nexthere)
+                if (o->o_id == id && Is_container(o))
+                    return o;
+        }
+    return (struct obj *) 0;
+}
+
+/* #nhvloot <container id>: open it for the panel */
+int
+donhvloot(void)
+{
+    unsigned id = (unsigned) nhv_cmd_args[0];
+    struct obj *cobj = nhv_find_container(id);
+    boolean held;
+    int res;
+
+    if (!cobj) {
+        nhv_container_event("fail", id);
+        return ECMD_OK;
+    }
+    held = carried(cobj);
+    if (!held && !able_to_loot(cobj->ox, cobj->oy, TRUE)) {
+        nhv_container_event("fail", id);
+        return ECMD_OK;
+    }
+    nhv_loot_panel = TRUE;
+    nhv_loot_opened = FALSE;
+    res = use_container(&cobj, held, FALSE);
+    nhv_loot_panel = FALSE;
+    nhv_container_event((cobj && nhv_loot_opened) ? "open" : "fail", id);
+    return res;
+}
+
+/* move (count of) an object into or out of an open container */
+staticfn int
+nhv_container_xfer(boolean in)
+{
+    unsigned id = (unsigned) nhv_cmd_args[0], oid = (unsigned) nhv_cmd_args[1];
+    long cnt = (long) nhv_cmd_args[2];
+    struct obj *cobj = nhv_find_container(id), *otmp;
+    int res;
+
+    if (!cobj || cobj->olocked) {
+        nhv_container_event("fail", id);
+        return ECMD_OK;
+    }
+    for (otmp = in ? gi.invent : cobj->cobj; otmp; otmp = otmp->nobj)
+        if (otmp->o_id == oid)
+            break;
+    if (!otmp || otmp == cobj) {
+        nhv_container_event("fail", id);
+        return ECMD_OK;
+    }
+    if (cnt > 0 && cnt < otmp->quan)
+        otmp = splitobj(otmp, cnt);
+    gc.current_container = cobj;
+    gs.sellobj_first = TRUE;
+    res = in ? in_container(otmp) : out_container(otmp);
+    sellobj_state(SELL_NORMAL);
+    if (gc.current_container)
+        gc.current_container->cknown = 1;
+    else
+        id = 0; /* the container is gone (e.g. a bag of holding exploded) */
+    gc.current_container = 0;
+    update_inventory();
+    nhv_container_event(id == 0 ? "gone" : res > 0 ? "changed" : "fail", id);
+    return ECMD_OK;
+}
+
+/* #nhvcontin <container id> <inventory object id> <count (0 = all)> */
+int
+donhvcontin(void)
+{
+    return nhv_container_xfer(TRUE);
+}
+
+/* #nhvcontout <container id> <object id> <count (0 = all)> */
+int
+donhvcontout(void)
+{
+    return nhv_container_xfer(FALSE);
+}
+#endif /* NHV_FREEMOVE */
