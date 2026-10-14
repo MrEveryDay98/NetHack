@@ -1091,6 +1091,13 @@ test_move(
                     return FALSE;
             } else {
                 if (mode == DO_MOVE) {
+#ifdef NHV_FREEMOVE
+                    /* NetHack Voxel: walking up to a closed door doesn't
+                       open it (right-clicking it does); your body just
+                       stops at it, without a message */
+                    if (nhv_freemove)
+                        return FALSE;
+#endif
                     if (amorphous(gy.youmonst.data))
                         You("try to ooze under the door,"
                             " but can't squeeze your possessions through.");
