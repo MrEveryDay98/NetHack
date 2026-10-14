@@ -611,6 +611,7 @@ dodrink(void)
         useup(otmp);
         return ECMD_TIME;
     }
+    NHV_HOOK("quaff_potion");
     return dopotion(otmp);
 }
 

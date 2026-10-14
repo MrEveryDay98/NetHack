@@ -606,12 +606,14 @@ doread(void)
                              : something);
 
     if (scroll->oclass == SPBOOK_CLASS) {
+        NHV_HOOK("read_spellbook");
         return study_book(scroll) ? ECMD_TIME : ECMD_OK;
     }
     scroll->in_use = TRUE; /* scroll, not spellbook, now being read */
     if (otyp != SCR_BLANK_PAPER) {
         boolean silently = !can_chant(&gy.youmonst);
 
+        NHV_HOOK("read_scroll");
         /* a few scroll feedback messages describe something happening
            to the scroll itself, so avoid "it disappears" for those */
         nodisappear = (otyp == SCR_FIRE
