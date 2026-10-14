@@ -2431,6 +2431,13 @@ u_maybe_impaired(void)
 staticfn boolean
 impaired_movement(coordxy *x, coordxy *y)
 {
+#ifdef NHV_FREEMOVE
+    /* NetHack Voxel: being confused or stunned scrambles the controls
+       instead (the game reverses / rotates your walking and turns the
+       camera upside down); your body goes where you steer it */
+    if (nhv_freemove)
+        return FALSE;
+#endif
     if (u_maybe_impaired()) {
         int tries = 0;
 
