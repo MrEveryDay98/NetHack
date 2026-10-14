@@ -503,6 +503,29 @@ kick_object(coordxy x, coordxy y, char *kickobjnam)
     return res;
 }
 
+#ifdef NHV_FREEMOVE
+/* #nhvkickhere dx dy: NetHack Voxel. In 3D you can stand right beside a
+   chest that is on your own square; kicking it sends it (dx, dy), the way
+   you face, as if kicked from the square behind you. */
+int
+donhvkickhere(void)
+{
+    char buf[BUFSZ];
+    int dx = nhv_cmd_args[0], dy = nhv_cmd_args[1];
+
+    if (!OBJ_AT(u.ux, u.uy)) {
+        You("kick at empty space.");
+        return ECMD_TIME;
+    }
+    if (!dx && !dy)
+        dx = 1;
+    u.dx = sgn(dx), u.dy = sgn(dy), u.dz = 0;
+    if (!kick_object(u.ux, u.uy, buf) && *buf)
+        pline("Thump!");
+    return ECMD_TIME;
+}
+#endif
+
 /* guts of kick_object */
 staticfn int
 really_kick_object(coordxy x, coordxy y)
@@ -651,11 +674,11 @@ really_kick_object(coordxy x, coordxy y)
         boolean otrp = gk.kickedobj->otrapped;
 
         if (range < 2)
-            pline("THUD!");
+            NHV_HOOK("kick_box_thud"), pline("THUD!");
         container_impact_dmg(gk.kickedobj, x, y);
         if (gk.kickedobj->olocked) {
             if (!rn2(5) || (martial() && !rn2(2))) {
-                You("break open the lock!");
+                NHV_HOOK("break_open_lock"), You("break open the lock!");
                 breakchestlock(gk.kickedobj, FALSE);
                 if (otrp)
                     (void) chest_trap(gk.kickedobj, LEG, FALSE);
@@ -685,7 +708,7 @@ really_kick_object(coordxy x, coordxy y)
      */
     if (range < 2) {
         if (!Is_box(gk.kickedobj))
-            pline("Thump!");
+            NHV_HOOK("kick_box_thud"), pline("Thump!");
         return (!rn2(3) || martial());
     }
 

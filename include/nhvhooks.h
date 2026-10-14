@@ -66,6 +66,7 @@ extern int donhvcontout(void);
 extern int donhvhurt(void);
 extern int donhvspike(void);
 extern int donhvopt(void);
+extern int donhvkickhere(void);
 #endif
 
 /* sound hook: an event the sound configuration can attach a sound to */
