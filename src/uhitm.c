@@ -6283,6 +6283,7 @@ RESTORE_WARNING_FORMAT_NONLITERAL
 void
 stumble_onto_mimic(struct monst *mtmp)
 {
+    NHV_HOOK("mimic_revealed");
     that_is_a_mimic(mtmp, MIM_REVEAL);
 
     if (!u.ustuck && !mtmp->mflee && dmgtype(mtmp->data, AD_STCK)

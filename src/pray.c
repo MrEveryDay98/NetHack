@@ -787,6 +787,7 @@ angrygods(aligntyp resp_god)
 staticfn void
 at_your_feet(const char *str)
 {
+    NHV_HOOK("god_gift");
     if (Blind)
         str = Something;
     if (u.uswallow) {
@@ -2267,7 +2268,7 @@ dopray(void)
     if (gp.p_type == 3 && !Inhell) {
         /* if you've been true to your god you can't die while you pray */
         if (!Blind)
-            You("are surrounded by a shimmering light.");
+            NHV_HOOK("magic_energy"), You("are surrounded by a shimmering light.");
         u.uinvulnerable = TRUE;
     }
 

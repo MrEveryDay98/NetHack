@@ -145,7 +145,8 @@ gush(coordxy x, coordxy y, genericptr_t poolcnt)
         return;
 
     if (!((*(int *) poolcnt)++))
-        pline("Water gushes forth from the overflowing fountain!");
+        NHV_HOOK("water_gushes"),
+            pline("Water gushes forth from the overflowing fountain!");
 
     /* Put a pool at x, y */
     set_levltyp(x, y, POOL);

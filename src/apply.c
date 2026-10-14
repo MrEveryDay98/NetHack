@@ -3122,7 +3122,7 @@ use_whip(struct obj *obj)
             if (mtmp)
                 wakeup(mtmp, TRUE);
         } else
-            pline1(msg_snap);
+            NHV_HOOK("whip_snap"), pline1(msg_snap);
 
     } else if (mtmp) {
  whipattack:
@@ -3255,7 +3255,7 @@ use_whip(struct obj *obj)
             if (proficient && force_attack(mtmp, FALSE))
                 return ECMD_TIME;
             if (do_snap)
-                pline1(msg_snap);
+                NHV_HOOK("whip_snap"), pline1(msg_snap);
         }
         /* regardless of mtmp's weapon or hero's proficiency */
         wakeup(mtmp, TRUE);
@@ -3265,7 +3265,7 @@ use_whip(struct obj *obj)
         You("snap your whip through thin air.");
 
     } else {
-        pline1(msg_snap);
+        NHV_HOOK("whip_snap"), pline1(msg_snap);
     }
     return ECMD_TIME;
 }

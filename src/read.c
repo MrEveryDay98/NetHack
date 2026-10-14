@@ -668,12 +668,14 @@ stripspe(struct obj *obj)
 staticfn void
 p_glow1(struct obj *otmp)
 {
+    NHV_HOOK("item_glows");
     pline("%s briefly.", Yobjnam2(otmp, Blind ? "vibrate" : "glow"));
 }
 
 staticfn void
 p_glow2(struct obj *otmp, const char *color)
 {
+    NHV_HOOK(!strcmp(color, NH_BLACK) ? "item_glows_black" : "item_glows");
     pline("%s%s%s for a moment.", Yobjnam2(otmp, Blind ? "vibrate" : "glow"),
           Blind ? "" : " ", Blind ? "" : hcolor(color));
 }
@@ -681,6 +683,7 @@ p_glow2(struct obj *otmp, const char *color)
 staticfn void
 p_glow3(struct obj *otmp, const char *color)
 {
+    NHV_HOOK(!strcmp(color, NH_BLACK) ? "item_glows_black" : "item_glows");
     pline("%s feebly%s%s for a moment.",
           Yobjnam2(otmp, Blind ? "vibrate" : "glow"),
           Blind ? "" : " ", Blind ? "" : hcolor(color));
@@ -1144,6 +1147,7 @@ seffect_enchant_armor(struct obj **sobjp)
             pline("%s warm for a moment.", Yobjnam2(otmp, "feel"));
         } else {
             otmp->rknown = TRUE;
+            NHV_HOOK(scursed ? "item_glows_black" : "item_glows");
             pline("%s covered by a %s %s %s!", Yobjnam2(otmp, "are"),
                   scursed ? "mottled" : "shimmering",
                   hcolor(scursed ? NH_BLACK : NH_GOLDEN),
@@ -1180,6 +1184,7 @@ seffect_enchant_armor(struct obj **sobjp)
     s = scursed ? -otmp->spe : otmp->spe;
     if (s > (special_armor ? 5 : 3) && rn2(s)) {
         otmp->in_use = TRUE;
+        NHV_HOOK(scursed ? "item_glows_black" : "item_glows");
         pline("%s violently %s%s%s for a while, then %s.", Yname2(otmp),
               otense(otmp, Blind ? "vibrate" : "glow"),
               (!Blind && !same_color) ? " " : "",
@@ -1252,6 +1257,7 @@ seffect_enchant_armor(struct obj **sobjp)
             maybe_adjust_light(otmp, old_light);
         return;
     }
+    NHV_HOOK(scursed ? "item_glows_black" : "item_glows");
     pline("%s %s%s%s%s for a %s.", Yname2(otmp),
           (s == 0) ? "violently " : "",
           otense(otmp, Blind ? "vibrate" : "glow"),
@@ -3029,7 +3035,7 @@ punish(struct obj *sobj)
 
     /* KMH -- Punishment is still okay when you are riding */
     if (!reuse_ball)
-        You("are being punished for your misbehavior!");
+        NHV_HOOK("punished"), You("are being punished for your misbehavior!");
     if (Punished) {
         Your("iron ball gets heavier.");
         uball->owt += WT_IRON_BALL_INCR * (1 + cursed_levy);

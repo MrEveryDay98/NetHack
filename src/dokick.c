@@ -663,7 +663,7 @@ really_kick_object(coordxy x, coordxy y)
             }
         } else {
             if (!rn2(3) || (martial() && !rn2(2))) {
-                pline_The("lid slams open, then falls shut.");
+                NHV_HOOK("lid_slams_open_falls_shut"), pline_The("lid slams open, then falls shut.");
                 gk.kickedobj->lknown = 1;
                 if (otrp)
                     (void) chest_trap(gk.kickedobj, LEG, FALSE);
@@ -963,7 +963,8 @@ kick_door(coordxy x, coordxy y, int avrg_attrib)
         /* note: this used to be unconditional "WHAMMM!!!" but that has a
            fairly strong connotation of noise that a deaf hero shouldn't
            hear; we've kept the extra 'm's and one of the extra '!'s */
-        pline("%s!!", (Deaf || !rn2(3)) ? "Thwack" : "Whammm");
+        NHV_HOOK("kick_door_whamm"),
+            pline("%s!!", (Deaf || !rn2(3)) ? "Thwack" : "Whammm");
         if (in_town(x, y))
             (void) get_iter_mons_xy(watchman_door_damage, x, y);
     }

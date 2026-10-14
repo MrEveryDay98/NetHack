@@ -215,13 +215,29 @@ dosounds(void)
             "bubbling water.", "water falling on coins.",
             "the splashing of a naiad.", "a soda fountain!",
         };
-        You_hear1(fountain_msg[rn2(3) + hallu]);
+        {
+            static const char *const fountain_hook[4] = {
+                "ambient_bubbling", "ambient_coins", "ambient_naiad", "ambient_soda",
+            };
+            int k = rn2(3) + hallu;
+
+            NHV_HOOK(fountain_hook[k]);
+            You_hear1(fountain_msg[k]);
+        }
     }
     if (svl.level.flags.nsinks && !rn2(300)) {
         static const char *const sink_msg[3] = {
             "a slow drip.", "a gurgling noise.", "dishes being washed!",
         };
-        You_hear1(sink_msg[rn2(2) + hallu]);
+        {
+            static const char *const sink_hook[3] = {
+                "ambient_sink_drip", "ambient_sink_gurgle", "ambient_sink_dishes",
+            };
+            int k = rn2(2) + hallu;
+
+            NHV_HOOK(sink_hook[k]);
+            You_hear1(sink_msg[k]);
+        }
     }
     if (svl.level.flags.has_court && !rn2(200)) {
         if (get_iter_mons(throne_mon_sound))

@@ -1229,7 +1229,7 @@ peffect_gain_energy(struct obj *otmp)
     if (otmp->cursed)
         You_feel("lackluster.");
     else
-        pline("Magical energies course through your body.");
+        NHV_HOOK("magic_energy"), pline("Magical energies course through your body.");
 
     /* old: num = rnd(5) + 5 * otmp->blessed + 1;
      *      blessed:  +7..11 max & current (+9 avg)

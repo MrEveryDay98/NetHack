@@ -1542,7 +1542,7 @@ consume_tin(const char *mesg)
         return;
     }
 
-    pline1(mesg); /* "You succeed in opening the tin." */
+    NHV_HOOK("tin_opened"), pline1(mesg); /* "You succeed in opening the tin." */
 
     if (r != SPINACH_TIN) {
         mnum = tin->corpsenm;

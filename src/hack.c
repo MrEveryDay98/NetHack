@@ -3727,6 +3727,7 @@ check_special_room(boolean newlev)
 
             if (oracle) {
                 SetVoice(oracle, 0, 80, 0);
+                NHV_HOOK("delphi_welcome");
                 if (!oracle->mpeaceful)
                     verbalize("You're in Delphi, %s.", svp.plname);
                 else

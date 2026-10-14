@@ -266,7 +266,7 @@ digcheck_fail_message(enum digcheck_result digresult, struct monst *madeby,
         You("cannot %s thin air.", verb);
         break;
     case DIGCHECK_FAIL_ALTAR:
-        pline_The("altar is too hard to break apart.");
+        NHV_HOOK("dig_too_hard"), pline_The("altar is too hard to break apart.");
         break;
     case DIGCHECK_FAIL_BOULDER:
         There("isn't enough room to %s here.", verb);
@@ -275,15 +275,15 @@ digcheck_fail_message(enum digcheck_result digresult, struct monst *madeby,
         pline_The("ladder resists your effort.");
         break;
     case DIGCHECK_FAIL_ONSTAIRS:
-        pline_The("stairs are too hard to %s.", verb);
+        NHV_HOOK("dig_too_hard"), pline_The("stairs are too hard to %s.", verb);
         break;
     case DIGCHECK_FAIL_THRONE:
-        pline_The("throne is too hard to break apart.");
+        NHV_HOOK("dig_too_hard"), pline_The("throne is too hard to break apart.");
         break;
     case DIGCHECK_FAIL_CANTDIG:
     case DIGCHECK_FAIL_TOOHARD:
     case DIGCHECK_FAIL_UNDESTROYABLETRAP:
-        pline_The("%s here is too hard to %s.", surface(x, y), verb);
+        NHV_HOOK("dig_too_hard"), pline_The("%s here is too hard to %s.", surface(x, y), verb);
         break;
     case DIGCHECK_FAIL_WATERLEVEL:
         pline_The("%s splashes and subsides.", hliquid("water"));
@@ -985,10 +985,10 @@ dighole(boolean pit_only, boolean by_magic, coord *cc)
 
     /* the following two are here for the wand of digging */
     } else if (IS_THRONE(old_typ)) {
-        pline_The("throne is too hard to break apart.");
+        NHV_HOOK("dig_too_hard"), pline_The("throne is too hard to break apart.");
 
     } else if (IS_ALTAR(old_typ)) {
-        pline_The("altar is too hard to break apart.");
+        NHV_HOOK("dig_too_hard"), pline_The("altar is too hard to break apart.");
 
     } else {
         typ = fillholetyp(dig_x, dig_y, FALSE);

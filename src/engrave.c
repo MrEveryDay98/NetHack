@@ -1246,7 +1246,7 @@ doengrave(void)
     if (de->post_engr_text[0])
         pline("%s", de->post_engr_text);
     if (de->doblind && !resists_blnd(&gy.youmonst)) {
-        You("are blinded by the flash!");
+        NHV_HOOK("blinded_by_flash"), You("are blinded by the flash!");
         make_blinded((long) rnd(50), FALSE);
         if (!Blind)
             Your1(vision_clears);

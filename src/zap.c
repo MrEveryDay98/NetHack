@@ -3060,7 +3060,7 @@ boolean
 flashburn(long duration, boolean via_lightning)
 {
     if (!resists_blnd(&gy.youmonst)) {
-        You(are_blinded_by_the_flash);
+        NHV_HOOK("blinded_by_flash"), You(are_blinded_by_the_flash);
         make_blinded(duration, FALSE);
         if (!Blind)
             Your1(vision_clears);

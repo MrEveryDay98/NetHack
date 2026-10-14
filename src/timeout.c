@@ -913,7 +913,7 @@ nh_timeout(void)
                      */
                     if ((inv_weight() > (WT_NOISY_INV * -1))) {
                         if (!Deaf)
-                            You("make a lot of noise!");
+                            NHV_HOOK("lot_of_noise"), You("make a lot of noise!");
                         wake_nearby(FALSE);
                     }
                 }

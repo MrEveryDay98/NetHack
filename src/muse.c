@@ -1945,7 +1945,7 @@ use_offensive(struct monst *mtmp)
         }
         gm.m_using = TRUE;
         if (!Blind && !resists_blnd(&gy.youmonst)) {
-            You("are blinded by the flash of light!");
+            NHV_HOOK("blinded_by_flash"), You("are blinded by the flash of light!");
             make_blinded(BlindedTimeout + (long) rnd(1 + 50), FALSE);
         }
         lightdamage(otmp, TRUE, 5);
