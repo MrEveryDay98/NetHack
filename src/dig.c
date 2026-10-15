@@ -1628,6 +1628,9 @@ zap_dig(void)
             break;
         room = &levl[zx][zy];
         tmp_at(zx, zy);
+#ifdef NHV_FREEMOVE
+        nhv_beam_x = zx, nhv_beam_y = zy;
+#endif
         nh_delay_output(); /* wait a little bit */
 
         if (pitdig) { /* we are already in a pit if this is true */

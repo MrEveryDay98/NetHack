@@ -3447,6 +3447,9 @@ weffects(struct obj *obj)
         } else {
             (void) bhit(u.dx, u.dy, rn1(8, 6), ZAPPED_WAND, bhitm, bhito,
                         &obj);
+#ifdef NHV_FREEMOVE
+            nhv_beam_event(otyp, u.ux, u.uy, gb.bhitpos.x, gb.bhitpos.y);
+#endif
         }
         zapwrapup(); /* give feedback for obj_zapped */
 
@@ -3456,8 +3459,16 @@ weffects(struct obj *obj)
     } else {
         /* neither immediate nor directionless */
 
-        if (otyp == WAN_DIGGING || otyp == SPE_DIG)
+        if (otyp == WAN_DIGGING || otyp == SPE_DIG) {
+#ifdef NHV_FREEMOVE
+            nhv_beam_x = u.ux, nhv_beam_y = u.uy;
+#endif
             zap_dig();
+#ifdef NHV_FREEMOVE
+            if (!u.dz)
+                nhv_beam_event(otyp, u.ux, u.uy, nhv_beam_x, nhv_beam_y);
+#endif
+        }
         else if (otyp >= SPE_MAGIC_MISSILE && otyp <= SPE_FINGER_OF_DEATH)
             ubuzz(BZ_U_SPELL(BZ_OFS_SPE(otyp)), u.ulevel / 2 + 1);
         else if (otyp >= WAN_MAGIC_MISSILE && otyp <= WAN_LIGHTNING)

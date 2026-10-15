@@ -68,6 +68,10 @@ extern int donhvspike(void);
 extern int donhvopt(void);
 extern int donhvkickhere(void);
 extern int donhvlook(void);
+/* an immediate beam (force bolt, striking, dig...) the hero zapped, from
+   <x0,y0> to where it ended, for the host to draw (nhv_free.c) */
+extern void nhv_beam_event(int, int, int, int, int);
+extern coordxy nhv_beam_x, nhv_beam_y; /* last square zap_dig reached */
 #endif
 
 /* sound hook: an event the sound configuration can attach a sound to */
