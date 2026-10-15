@@ -32,6 +32,11 @@ staticfn void mktrap_victim(struct trap *);
 staticfn int traptype_rnd(unsigned);
 staticfn int traptype_roguelvl(void);
 staticfn struct mkroom *find_branch_room(coord *) NONNULLARG1;
+#ifdef NHV_FREEMOVE
+staticfn boolean nhv_stairs_spot(struct mkroom *, coord *);
+#else
+#define nhv_stairs_spot(croom, pos) somexyspace(croom, pos)
+#endif
 staticfn struct mkroom *pos_to_room(coordxy, coordxy);
 staticfn boolean cardinal_nextto_room(struct mkroom *, coordxy, coordxy);
 staticfn boolean place_niche(struct mkroom *, int *, coordxy *, coordxy *);
@@ -69,6 +74,10 @@ mkroom_cmp(const genericptr vx, const genericptr vy)
 }
 
 /* is x,y a good location for a door into room? */
+#ifdef NHV_FREEMOVE
+static boolean nhv_door_avoid_stairs = TRUE; /* (see finddpos) */
+#endif
+
 staticfn boolean
 good_rm_wall_doorpos(coordxy x, coordxy y, int dir, struct mkroom *room)
 {
@@ -92,6 +101,13 @@ good_rm_wall_doorpos(coordxy x, coordxy y, int dir, struct mkroom *room)
 
     if (!isok(tx,ty) || IS_OBSTRUCTED(levl[tx][ty].typ))
         return FALSE;
+#ifdef NHV_FREEMOVE
+    /* NetHack Voxel: no door right in front of stairs or a ladder (a solid
+       structure in 3D: it would block the way in), if it can be helped */
+    if (nhv_door_avoid_stairs
+        && (levl[tx][ty].typ == STAIRS || levl[tx][ty].typ == LADDER))
+        return FALSE;
+#endif
 
     rmno = (room - svr.rooms) + ROOMOFFSET;
 
@@ -180,7 +196,12 @@ finddpos(coord *cc, int dir, struct mkroom *aroom)
         return FALSE;
     }
 
+#ifdef NHV_FREEMOVE
+    nhv_door_avoid_stairs = TRUE;
+ retry:
+#endif
     /* try random points */
+    tryct = 0;
     do {
         x = (x2 - x1) ? rn1(x2 - x1 + 1, x1) : x1;
         y = (y2 - y1) ? rn1(y2 - y1 + 1, y1) : y1;
@@ -194,11 +215,21 @@ finddpos(coord *cc, int dir, struct mkroom *aroom)
             if (finddpos_shift(&x, &y, dir, aroom))
                 goto gotit;
 
+#ifdef NHV_FREEMOVE
+    /* (only spots in front of stairs: one of those after all) */
+    if (nhv_door_avoid_stairs) {
+        nhv_door_avoid_stairs = FALSE;
+        goto retry;
+    }
+#endif
     /* cannot find something reasonable -- strange */
     cc->x = x1;
     cc->y = y1;
     return FALSE;
  gotit:
+#ifdef NHV_FREEMOVE
+    nhv_door_avoid_stairs = TRUE;
+#endif
     cc->x = x;
     cc->y = y;
     return TRUE;
@@ -1666,7 +1697,7 @@ find_branch_room(coord *mp)
     } else {
         croom = generate_stairs_find_room();
         assert(croom != NULL); /* Null iff nroom==0 which won't get here */
-        if (!somexyspace(croom, mp))
+        if (!nhv_stairs_spot(croom, mp))
             impossible("Can't place branch!");
     }
     return croom;
@@ -2246,6 +2277,36 @@ generate_stairs_find_room(void)
 
 /* construct stairs up and down within the same branch,
    up and down in different rooms if possible */
+#ifdef NHV_FREEMOVE
+/* NetHack Voxel: stairs and ladders are solid structures in 3D (built
+   from prefabs), so a staircase right inside a door would block the way
+   in. Pick a spot in the room with no door, doorway or secret door
+   directly beside it; failing that, any spot as usual. */
+staticfn boolean
+nhv_stairs_spot(struct mkroom *croom, coord *pos)
+{
+    int tries, k;
+    static const int dx[4] = { 1, -1, 0, 0 }, dy[4] = { 0, 0, 1, -1 };
+
+    for (tries = 0; tries < 50; tries++) {
+        boolean by_door = FALSE;
+
+        if (!somexyspace(croom, pos))
+            break;
+        for (k = 0; k < 4; k++) {
+            coordxy x = pos->x + dx[k], y = pos->y + dy[k];
+
+            if (isok(x, y)
+                && (IS_DOOR(levl[x][y].typ) || levl[x][y].typ == SDOOR))
+                by_door = TRUE;
+        }
+        if (!by_door)
+            return TRUE;
+    }
+    return somexyspace(croom, pos);
+}
+#endif
+
 staticfn void
 generate_stairs(void)
 {
@@ -2260,7 +2321,7 @@ generate_stairs(void)
         if ((croom = generate_stairs_find_room()) == NULL)
             panic(gen_stairs_panic, svn.nroom);
 
-        if (!somexyspace(croom, &pos)) {
+        if (!nhv_stairs_spot(croom, &pos)) {
             pos.x = somex(croom);
             pos.y = somey(croom);
         }
@@ -2273,7 +2334,7 @@ generate_stairs(void)
         if ((croom = generate_stairs_find_room()) == NULL)
             panic(gen_stairs_panic, svn.nroom);
 
-        if (!somexyspace(croom, &pos)) {
+        if (!nhv_stairs_spot(croom, &pos)) {
             pos.x = somex(croom);
             pos.y = somey(croom);
         }
