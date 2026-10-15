@@ -257,6 +257,19 @@ cannot_push_msg(struct obj *otmp, coordxy sx, coordxy sy)
         You("try to move %s, but in vain.", what);
     if (Blind)
         feel_location(sx, sy);
+#ifdef NHV_FREEMOVE
+    /* NetHack Voxel: a boulder behind it (in a dark corridor, out of
+       sight) is what stops it; you feel it through the push */
+    {
+        coordxy rx = sx + u.dx, ry = sy + u.dy;
+        struct obj *behind = isok(rx, ry) ? sobj_at(BOULDER, rx, ry) : 0;
+
+        if (behind) {
+            map_object(behind, TRUE);
+            pline("There's another boulder behind it.");
+        }
+    }
+#endif
 }
 
 staticfn int
