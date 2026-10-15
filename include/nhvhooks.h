@@ -75,7 +75,8 @@ extern void nhv_throw_event(int, int, int, int, int);
 extern coordxy nhv_beam_x, nhv_beam_y; /* last square zap_dig reached */
 /* aiming: #nhvaim dx dy (thousandths) gives the exact line the host's
    crosshair points along; the next command's thrown objects and beams
-   follow it (any angle) instead of NetHack's 8 directions */
+   follow it (any angle) instead of NetHack's 8 directions; digging
+   keeps NetHack's own directions */
 extern int donhvaim(void);
 extern void nhv_aim_tick(void);
 extern int nhv_aim_path(coordxy, coordxy, int, int, coordxy *, coordxy *, int);

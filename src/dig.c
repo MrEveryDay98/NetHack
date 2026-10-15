@@ -1555,10 +1555,6 @@ zap_dig(void)
     struct trap *trap_with_u = (struct trap *) 0;
     coordxy zx, zy, flow_x = -1, flow_y = -1;
     int diridx = 8, digdepth;
-#ifdef NHV_FREEMOVE
-    coordxy pathx[64], pathy[64];
-    int npath = 0, kpath = 0;
-#endif
     boolean shopdoor, shopwall, maze_dig, pitdig = FALSE, pitflow = FALSE;
 
     /*
@@ -1626,14 +1622,6 @@ zap_dig(void)
         diridx = xytodir(u.dx, u.dy);
     }
     digdepth = rn1(18, 8);
-#ifdef NHV_FREEMOVE
-    /* aimed with the crosshair: dig along that line */
-    if (nhv_freemove && !pitdig) {
-        npath = nhv_aim_path(u.ux, u.uy, u.dx, u.dy, pathx, pathy, 64);
-        if (npath)
-            zx = pathx[0], zy = pathy[0], kpath = 1;
-    }
-#endif
     tmp_at(DISP_BEAM, cmap_to_glyph(S_digbeam));
     while (--digdepth >= 0) {
         if (!isok(zx, zy))
@@ -1749,13 +1737,6 @@ zap_dig(void)
             }
             unblock_point(zx, zy); /* vision */
         }
-#ifdef NHV_FREEMOVE
-        if (kpath && kpath < npath) {
-            zx = pathx[kpath], zy = pathy[kpath];
-            kpath++;
-            continue;
-        }
-#endif
         zx += u.dx;
         zy += u.dy;
     }                    /* while */
