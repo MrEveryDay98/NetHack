@@ -2331,6 +2331,23 @@ doquickwhatis(void)
     return do_look(1, (coord *) 0);
 }
 
+#ifdef NHV_FREEMOVE
+/* #nhvlook x y: NetHack Voxel. Look at the square <x,y> (the host's
+   middle-click on whatever is under the crosshair), as a mouse-click
+   look would; no time passes. */
+int
+donhvlook(void)
+{
+    coord cc;
+
+    cc.x = nhv_cmd_args[0], cc.y = nhv_cmd_args[1];
+    if (!isok(cc.x, cc.y))
+        return ECMD_OK;
+    (void) do_look(2, &cc);
+    return ECMD_OK;
+}
+#endif
+
 /* the #showtrap command */
 int
 doidtrap(void)

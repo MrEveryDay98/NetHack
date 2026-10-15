@@ -1795,6 +1795,8 @@ struct ext_func_tab extcmdlist[] = {
               donhvspike, IFBURIED, NULL },
     { '\0',   "nhvkickhere", "(NetHack Voxel) kick what's on your own square",
               donhvkickhere, IFBURIED, NULL },
+    { ' ',   "nhvlook", "(NetHack Voxel) look at a square",
+              donhvlook, IFBURIED | GENERALCMD | NOFUZZERCMD, NULL },
     { '\0',   "nhvopt", "(NetHack Voxel) set an option",
               donhvopt, IFBURIED | GENERALCMD | NOFUZZERCMD, NULL },
     { '\0',   "nhvrayhit", "(NetHack Voxel) a ray reached a body",
