@@ -519,7 +519,11 @@ mattacku(struct monst *mtmp)
 
     calc_mattacku_vars(mtmp, &ranged, &range2, &foundyou, &youseeit);
 #ifdef NHV_FREEMOVE
-    nhv_combat_event("attack", mtmp->m_id, 0, !range2);
+    /* (only in melee: this runs for every hostile monster within range
+       each turn, most of which have nothing to do from where they are;
+       a ranged attack shows when its missile or ray is launched) */
+    if (!range2)
+        nhv_combat_event("attack", mtmp->m_id, 0, 1);
 #endif
 
     if (!ranged)
