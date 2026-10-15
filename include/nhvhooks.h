@@ -80,6 +80,13 @@ extern coordxy nhv_beam_x, nhv_beam_y; /* last square zap_dig reached */
 extern int donhvaim(void);
 extern void nhv_aim_tick(void);
 extern int nhv_aim_path(coordxy, coordxy, int, int, coordxy *, coordxy *, int);
+/* special levels: the variant built and its fixed regions (a level file's
+   drawn maps, and its rooms with a fixed place and size), reported to the
+   host so it can build them from hand-made area prefabs (nhv_free.c) */
+extern void nhv_splev_begin(const char *);
+extern void nhv_splev_region(int, int, int, int);
+extern void nhv_splev_end(void);
+extern int donhvsplevdump(void);
 #endif
 
 /* sound hook: an event the sound configuration can attach a sound to */

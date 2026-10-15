@@ -2820,6 +2820,15 @@ build_room(room *r, struct mkroom *mkr)
     }
 
     if (okroom) {
+#ifdef NHV_FREEMOVE
+        /* a room with a fixed place and size (Minetown's town, the
+           Oracle's centre): the walls around it included */
+        if (!mkr && !gi.in_mk_themerooms && r->x >= 0 && r->y >= 0
+            && r->w > 0 && r->h > 0)
+            nhv_splev_region(aroom->lx - 1, aroom->ly - 1,
+                             aroom->hx - aroom->lx + 3,
+                             aroom->hy - aroom->ly + 3);
+#endif
 #ifdef SPECIALIZATION
         topologize(aroom, FALSE); /* set roomno */
 #else
@@ -6295,6 +6304,12 @@ TODO: gc.coder->croom needs to be updated
                 terr.tlit = lit;
                 sel_set_ter(x, y, &terr);
             }
+#ifdef NHV_FREEMOVE
+        if (!gi.in_mk_themerooms)
+            nhv_splev_region(gx.xstart, gy.ystart,
+                             min(COLNO, gx.xstart + gx.xsize) - gx.xstart,
+                             min(ROWNO, gy.ystart + gy.ysize) - gy.ystart);
+#endif
     }
 
  skipmap:

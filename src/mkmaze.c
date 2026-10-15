@@ -1185,7 +1185,13 @@ makemaz(const char *s)
         check_ransacked(protofile);
         Strcat(protofile, LEV_EXT);
         gi.in_mk_themerooms = FALSE;
+#ifdef NHV_FREEMOVE
+        nhv_splev_begin(protofile);
+#endif
         if (load_special(protofile)) {
+#ifdef NHV_FREEMOVE
+            nhv_splev_end();
+#endif
             /* some levels can end up with monsters
                on dead mon list, including light source monsters */
             dmonsfree();
