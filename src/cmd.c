@@ -1795,7 +1795,9 @@ struct ext_func_tab extcmdlist[] = {
               donhvspike, IFBURIED, NULL },
     { '\0',   "nhvkickhere", "(NetHack Voxel) kick what's on your own square",
               donhvkickhere, IFBURIED, NULL },
-    { ' ',   "nhvlook", "(NetHack Voxel) look at a square",
+    { '\0',   "nhvaim", "(NetHack Voxel) aim the next throw or zap",
+              donhvaim, IFBURIED | GENERALCMD | NOFUZZERCMD, NULL },
+    { '\0',   "nhvlook", "(NetHack Voxel) look at a square",
               donhvlook, IFBURIED | GENERALCMD | NOFUZZERCMD, NULL },
     { '\0',   "nhvopt", "(NetHack Voxel) set an option",
               donhvopt, IFBURIED | GENERALCMD | NOFUZZERCMD, NULL },
@@ -3670,6 +3672,9 @@ rhack(int key)
 
     iflags.menu_requested = FALSE;
     svc.context.nopick = 0;
+#ifdef NHV_FREEMOVE
+    nhv_aim_tick(); /* an aim lasts for the command after #nhvaim */
+#endif
  got_prefix_input:
 #ifdef SAFERHANGUP
     if (program_state.done_hup)

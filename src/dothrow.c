@@ -1671,10 +1671,19 @@ throwit(
         if (Underwater)
             range = 1;
 
+#ifdef NHV_FREEMOVE
+        {
+            int nhv_glyph = obj_to_glyph(obj, rn2_on_display_rng);
+#endif
         mon = bhit(u.dx, u.dy, range,
                    tethered_weapon ? THROWN_TETHERED_WEAPON : THROWN_WEAPON,
                    (int (*)(MONST_P, OBJ_P)) 0,
                    (int (*)(OBJ_P, OBJ_P)) 0, &obj);
+#ifdef NHV_FREEMOVE
+            nhv_throw_event(nhv_glyph, u.ux, u.uy, gb.bhitpos.x,
+                            gb.bhitpos.y);
+        }
+#endif
         gt.thrownobj = obj; /* obj may be null now */
 
         /* have to do this after bhit() so u.ux & u.uy are correct */

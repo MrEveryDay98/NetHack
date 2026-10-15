@@ -71,7 +71,14 @@ extern int donhvlook(void);
 /* an immediate beam (force bolt, striking, dig...) the hero zapped, from
    <x0,y0> to where it ended, for the host to draw (nhv_free.c) */
 extern void nhv_beam_event(int, int, int, int, int);
+extern void nhv_throw_event(int, int, int, int, int);
 extern coordxy nhv_beam_x, nhv_beam_y; /* last square zap_dig reached */
+/* aiming: #nhvaim dx dy (thousandths) gives the exact line the host's
+   crosshair points along; the next command's thrown objects and beams
+   follow it (any angle) instead of NetHack's 8 directions */
+extern int donhvaim(void);
+extern void nhv_aim_tick(void);
+extern int nhv_aim_path(coordxy, coordxy, int, int, coordxy *, coordxy *, int);
 #endif
 
 /* sound hook: an event the sound configuration can attach a sound to */

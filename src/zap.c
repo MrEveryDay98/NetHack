@@ -3851,6 +3851,10 @@ bhit(
     boolean in_skip = FALSE, allow_skip = FALSE;
     boolean tethered_weapon = FALSE;
     int skiprange_start = 0, skiprange_end = 0, skipcount = 0;
+#ifdef NHV_FREEMOVE
+    coordxy nhv_pathx[64], nhv_pathy[64];
+    int nhv_npath = 0, nhv_k = 0;
+#endif
     struct obj *was_returning = (iflags.returning_missile == obj) ? obj
                                 : (struct obj *) 0;
 
@@ -3878,18 +3882,33 @@ bhit(
     } else if (weapon != ZAPPED_WAND && weapon != INVIS_BEAM)
         tmp_at(DISP_FLASH, obj_to_glyph(obj, rn2_on_display_rng));
 
+#ifdef NHV_FREEMOVE
+    /* aimed with the crosshair: along that line, not just ddx,ddy */
+    if (nhv_freemove && (weapon == ZAPPED_WAND || weapon == THROWN_WEAPON))
+        nhv_npath = nhv_aim_path(gb.bhitpos.x, gb.bhitpos.y, ddx, ddy,
+                                 nhv_pathx, nhv_pathy, 64);
+#endif
     while (range-- > 0) {
-        coordxy x, y;
+        coordxy x, y, prevx = gb.bhitpos.x, prevy = gb.bhitpos.y;
         int xyglyph;
 
-        gb.bhitpos.x += ddx;
-        gb.bhitpos.y += ddy;
+#ifdef NHV_FREEMOVE
+        if (nhv_k < nhv_npath) {
+            gb.bhitpos.x = nhv_pathx[nhv_k];
+            gb.bhitpos.y = nhv_pathy[nhv_k];
+            nhv_k++;
+        } else
+#endif
+        {
+            gb.bhitpos.x += ddx;
+            gb.bhitpos.y += ddy;
+        }
         x = gb.bhitpos.x;
         y = gb.bhitpos.y;
 
         if (!isok(x, y)) {
-            gb.bhitpos.x -= ddx;
-            gb.bhitpos.y -= ddy;
+            gb.bhitpos.x = prevx;
+            gb.bhitpos.y = prevy;
             break;
         }
 
@@ -3913,13 +3932,13 @@ bhit(
             if (obj->lamplit && !Blind)
                 show_transient_light(obj, x, y);
             if (typ == IRONBARS
-                && hits_bars(pobj, x - ddx, y - ddy, x, y,
+                && hits_bars(pobj, prevx, prevy, x, y,
                              point_blank ? 0 : !rn2(5), 1)) {
                 /* caveat: obj might now be null... */
                 obj = *pobj;  /* not currently needed due to 'break'; keep */
                 nhUse(obj);   /* in case usage gets added after the loop   */
-                gb.bhitpos.x -= ddx;
-                gb.bhitpos.y -= ddy;
+                gb.bhitpos.x = prevx;
+                gb.bhitpos.y = prevy;
                 break;
             }
         } else if (weapon == FLASHED_LIGHT) {
@@ -4085,8 +4104,8 @@ bhit(
             }
         }
         if (!ZAP_POS(typ) || closed_door(x, y)) {
-            gb.bhitpos.x -= ddx;
-            gb.bhitpos.y -= ddy;
+            gb.bhitpos.x = prevx;
+            gb.bhitpos.y = prevy;
             break;
         }
         if (weapon != ZAPPED_WAND && weapon != INVIS_BEAM) {
