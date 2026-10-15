@@ -32,6 +32,7 @@ extern void nhv_combat_event(const char *, unsigned, unsigned, int);
 extern void nhv_quest_event(const char *, const char *);
 /* extended commands used by the host */
 extern int donhvmove(void);
+extern int donhvpass(void);
 extern int donhvtick(void);
 extern int donhvattack(void);
 extern int donhvmhit(void);

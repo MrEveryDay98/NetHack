@@ -1800,6 +1800,8 @@ struct ext_func_tab extcmdlist[] = {
     { '\0',   "nhvsplevdump",
               "(NetHack Voxel) write every special level's fixed regions",
               donhvsplevdump, IFBURIED | WIZMODECMD | NOFUZZERCMD, NULL },
+    { '\0',   "nhvpass", "(NetHack Voxel) walk past someone",
+              donhvpass, IFBURIED | NOFUZZERCMD, NULL },
     { '\0',   "nhvlook", "(NetHack Voxel) look at a square",
               donhvlook, IFBURIED | GENERALCMD | NOFUZZERCMD, NULL },
     { '\0',   "nhvopt", "(NetHack Voxel) set an option",
