@@ -3454,6 +3454,13 @@ use_pole(struct obj *obj, boolean autohit)
         pline(where_to_hit);
     cc.x = u.ux;
     cc.y = u.uy;
+#ifdef NHV_FREEMOVE
+    if (nhv_pole_x) {
+        /* NetHack Voxel: the monster the player aimed at */
+        cc.x = nhv_pole_x, cc.y = nhv_pole_y;
+        nhv_pole_x = nhv_pole_y = 0;
+    } else
+#endif
     if (!find_poleable_mon(&cc) && hitm
         && !DEADMONSTER(hitm) && sensemon(hitm)
         && mdistu(hitm) <= max_range && mdistu(hitm) >= min_range) {

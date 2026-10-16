@@ -39,6 +39,10 @@ extern boolean nhv_in_pit;
 extern int donhvpit(void);
 extern int donhvtick(void);
 extern int donhvattack(void);
+/* #nhvpole id: apply the wielded polearm / lance at that monster (apply.c's
+   use_pole, aimed at nhv_pole_x, nhv_pole_y instead of asking) */
+extern int donhvpole(void);
+extern coordxy nhv_pole_x, nhv_pole_y;
 extern int donhvmhit(void);
 extern int donhvmhitm(void);
 extern int donhvmland(void);
