@@ -6676,7 +6676,12 @@ uteetering_at_seen_pit(struct trap *trap)
 {
     return (trap && is_pit(trap->ttyp) && trap->tseen
             && u_at(trap->tx, trap->ty)
-            && !(u.utrap && u.utraptype == TT_PIT));
+            && !(u.utrap && u.utraptype == TT_PIT)
+#ifdef NHV_FREEMOVE
+            /* (free movement: the body went down into it) */
+            && !nhv_in_pit
+#endif
+            );
 }
 
 /*

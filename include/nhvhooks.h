@@ -33,6 +33,10 @@ extern void nhv_quest_event(const char *, const char *);
 /* extended commands used by the host */
 extern int donhvmove(void);
 extern int donhvpass(void);
+/* the hero's body is down in the pit on its square (#nhvpit 1/0): it can
+   reach the bottom, though not trapped there */
+extern boolean nhv_in_pit;
+extern int donhvpit(void);
 extern int donhvtick(void);
 extern int donhvattack(void);
 extern int donhvmhit(void);
