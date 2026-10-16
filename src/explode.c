@@ -267,6 +267,11 @@ explode(
         mdef = m_at(x, y);
         expltype = -expltype;
     }
+#ifdef NHV_FREEMOVE
+    /* the host draws the fireball (only where it can be seen) */
+    if (cansee(x, y) || u_at(x, y))
+        nhv_explode_event(x, y, expltype);
+#endif
     /* if hero is engulfed and caused the explosion, only hero and
        engulfer will be affected */
     inside_engulfer = (u.uswallow && type >= 0);
