@@ -841,7 +841,6 @@ tele_to_rnd_pet(void)
 void
 tele(void)
 {
-    NHV_HOOK("teleport");
     scrolltele((struct obj *) 0);
 }
 
@@ -858,6 +857,7 @@ scrolltele(struct obj *scroll)
             learnscroll(scroll); /* this is obviously a teleport scroll */
         return;
     }
+    NHV_HOOK("teleport"); /* (any teleport: scroll, wand, spell, trap) */
 
     /* don't show trap if "Sorry..." */
     if (!Blinded)
