@@ -1846,8 +1846,16 @@ dotakeoff(void)
             pline("Not wearing any armor or accessories.");
         return ECMD_OK;
     }
+#ifdef NHV_FREEMOVE
+    /* NHV: always ask - the 3D UI sends 'T' + the item's letter, and
+       taking off the only worn piece unasked left that letter to run
+       as a command of its own (and with a cloak over a suit, took off
+       the cloak when the suit was clicked) */
+    otmp = getobj("take off", takeoff_ok, GETOBJ_NOFLAGS);
+#else
     if (Narmorpieces != 1 || ParanoidRemove || gi.item_action_in_progress)
         otmp = getobj("take off", takeoff_ok, GETOBJ_NOFLAGS);
+#endif
     if (!otmp)
         return ECMD_CANCEL;
 
@@ -1880,8 +1888,13 @@ doremring(void)
         pline("Not wearing any accessories or armor.");
         return ECMD_OK;
     }
+#ifdef NHV_FREEMOVE
+    /* NHV: always ask (see dotakeoff) */
+    otmp = getobj("remove", remove_ok, GETOBJ_NOFLAGS);
+#else
     if (Naccessories != 1 || ParanoidRemove || cmdq_peek(CQ_CANNED))
         otmp = getobj("remove", remove_ok, GETOBJ_NOFLAGS);
+#endif
     if (!otmp)
         return ECMD_CANCEL;
 
