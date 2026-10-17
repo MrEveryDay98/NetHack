@@ -3325,6 +3325,11 @@ launch_obj(
         singleobj = splitobj(otmp, 1L);
         obj_extract_self(singleobj);
     }
+#ifdef NHV_FREEMOVE
+    /* (what rolls, and from where: the host draws it rolling) */
+    int nhv_tile = obj_to_glyph(singleobj, rn2_on_display_rng);
+    coordxy nhv_x0 = x1, nhv_y0 = y1;
+#endif
     newsym(x1, y1);
     /* in case you're using a pick-axe to chop the boulder that's being
        launched (perhaps a monster triggered it), destroy context so that
@@ -3589,6 +3594,16 @@ launch_obj(
             }
         }
     } /* while dist > 0 */
+#ifdef NHV_FREEMOVE
+    /* a rolling boulder: from where it started to where it stopped (or
+       where it fell in / went), if any of that could be seen */
+    if (otyp == BOULDER && (style & ROLL)) {
+        coordxy ex = used_up ? x : x2, ey = used_up ? y : y2;
+
+        if (cansee(nhv_x0, nhv_y0) || cansee(ex, ey) || couldsee(ex, ey))
+            nhv_roll_event(nhv_tile, nhv_x0, nhv_y0, ex, ey, used_up);
+    }
+#endif
     tmp_at(DISP_END, 0);
     launch_drop_spot((struct obj *) 0, 0, 0);
     if (!used_up) {

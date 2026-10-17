@@ -81,6 +81,8 @@ extern int donhvlook(void);
    <x0,y0> to where it ended, for the host to draw (nhv_free.c) */
 extern void nhv_beam_event(int, int, int, int, int);
 extern void nhv_throw_event(int, int, int, int, int);
+/* a boulder rolled (rolling boulder trap): glyph, from, to, used up */
+extern void nhv_roll_event(int, int, int, int, int, int);
 /* an explosion at <x,y> of a type (EXPL_FIERY...) the hero can see */
 extern void nhv_explode_event(int, int, int);
 extern coordxy nhv_beam_x, nhv_beam_y; /* last square zap_dig reached */
