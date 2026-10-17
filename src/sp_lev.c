@@ -562,6 +562,10 @@ flip_level(
         maxx = (COLNO - 1);
     if (maxy >= ROWNO)
         maxy = (ROWNO - 1);
+#ifdef NHV_FREEMOVE
+    if (!extras)
+        nhv_splev_flip(flp, minx, miny, maxx, maxy);
+#endif
 
     if (extras) {
         if (Punished && uball->where != OBJ_FREE) {

@@ -99,6 +99,8 @@ extern int nhv_aim_path(coordxy, coordxy, int, int, coordxy *, coordxy *, int);
 extern void nhv_splev_begin(const char *);
 extern void nhv_splev_region(int, int, int, int);
 extern void nhv_splev_end(void);
+/* ... and how it was flipped once built (flip_level: mask, level extents) */
+extern void nhv_splev_flip(int, int, int, int, int);
 extern int donhvsplevdump(void);
 #endif
 
