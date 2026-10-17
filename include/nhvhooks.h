@@ -37,6 +37,11 @@ extern int donhvpass(void);
    reach the bottom, though not trapped there */
 extern boolean nhv_in_pit;
 extern int donhvpit(void);
+/* the hero's body is walking from square to square (#nhvmove, #nhvpass):
+   entering a trap's square doesn't set it off - the host says when the
+   body touches the trap (#nhvtrap); a pit, a real hole, still does */
+extern boolean nhv_walking;
+extern int donhvtrap(void);
 extern int donhvtick(void);
 extern int donhvattack(void);
 /* #nhvpole id: apply the wielded polearm / lance at that monster (apply.c's

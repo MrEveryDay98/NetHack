@@ -3407,6 +3407,13 @@ spoteffects(boolean pick)
         pit = (trap && is_pit(trap->ttyp));
         if (pick && !pit)
             (void) pickup(1);
+#ifdef NHV_FREEMOVE
+        /* walking into the square isn't stepping on the trap: the host
+           sets it off when the body touches it (#nhvtrap) - but not a
+           pit, a hole the body drops into */
+        if (trap && nhv_freemove && nhv_walking && !pit)
+            trap = (struct trap *) 0;
+#endif
 
         if (trap) {
             /*
