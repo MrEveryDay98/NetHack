@@ -3442,7 +3442,13 @@ spoteffects(boolean pick)
                                       : 0]);
     }
 
-    if ((mtmp = m_at(u.ux, u.uy)) != 0 && !u.uswallow) {
+    if ((mtmp = m_at(u.ux, u.uy)) != 0 && !u.uswallow
+#ifdef NHV_FREEMOVE
+        /* (free movement: you walked in among someone you could see - you
+           share the square; only one hiding there surprises you) */
+        && !(nhv_freemove && !mtmp->mundetected && !M_AP_TYPE(mtmp))
+#endif
+        ) {
         mtmp->mundetected = mtmp->msleeping = 0;
         switch (mtmp->data->mlet) {
         case S_PIERCER:
