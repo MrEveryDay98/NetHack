@@ -535,6 +535,13 @@ moveloop_core(void)
 #endif
         rhack(0);
     }
+#ifdef NHV_FREEMOVE
+    else if (nhv_freemove) {
+        /* helpless (multi < 0): the turn passes when the host's clock says
+           so, not at once */
+        nhv_helpless_turn();
+    }
+#endif
     if (u.utotype)       /* change dungeon level */
         deferred_goto(); /* after rhack() */
 

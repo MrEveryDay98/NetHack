@@ -43,6 +43,8 @@ extern int donhvpit(void);
 extern boolean nhv_walking;
 extern int donhvtrap(void);
 extern int donhvtick(void);
+/* the hero is helpless this turn: wait for the host's clock (nhv_win.c) */
+extern void nhv_helpless_turn(void);
 extern int donhvattack(void);
 /* #nhvpole id: apply the wielded polearm / lance at that monster (apply.c's
    use_pole, aimed at nhv_pole_x, nhv_pole_y instead of asking) */
