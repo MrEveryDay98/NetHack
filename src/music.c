@@ -694,6 +694,7 @@ do_improvisation(struct obj *instr)
 
         You("produce a heavy, thunderous rolling!");
         Hero_playnotes(obj_to_instr(&itmp), "C", 100);
+        Soundeffect(se_rumbling_of_earth, 100);
         pline_The("entire %s is shaking around you!", generic_lvl_desc());
         do_earthquake((u.ulevel - 1) / 3 + 1);
         /* shake up monsters in a much larger radius... */

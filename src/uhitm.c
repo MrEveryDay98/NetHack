@@ -5147,6 +5147,7 @@ gulpum(struct monst *mdef, struct attack *mattk)
                 break;
             case AD_ELEC:
                 if (rn2(2)) {
+                    Soundeffect(se_crackling, 80);
                     pline_The("air around %s crackles with electricity.",
                               mon_nam(mdef));
                     if (resists_elec(mdef)) {

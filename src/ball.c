@@ -56,6 +56,7 @@ ballfall(void)
         pline_The("iron ball falls on your %s.", body_part(HEAD));
         if (uarmh) {
             if (hard_helmet(uarmh)) {
+                Soundeffect(se_clanging_sound, 100);
                 pline("Fortunately, you are wearing a hard helmet.");
                 dmg = 3;
             } else if (flags.verbose)
@@ -1006,6 +1007,7 @@ drag_down(void)
 
     if (forward) {
         if (rn2(6)) {
+            Soundeffect(se_iron_ball_dragging_you, 80);
             pline_The("iron ball drags you downstairs!");
             losehp(Maybe_Half_Phys(rnd(6)),
                    "dragged downstairs by an iron ball", NO_KILLER_PREFIX);
@@ -1021,6 +1023,7 @@ drag_down(void)
             dragchance -= 2;
         }
         if ((int) dragchance >= rnd(6)) {
+            Soundeffect(se_iron_ball_dragging_you, 80);
             pline_The("iron ball drags you downstairs!");
             losehp(Maybe_Half_Phys(rnd(3)),
                    "dragged downstairs by an iron ball", NO_KILLER_PREFIX);

@@ -1353,6 +1353,7 @@ trapeffect_rocktrap(
                           an(helm_simple_name(uarmh))); /* helm or hat */
                     dmg = 2;
                 } else if (hard_helmet(uarmh)) {
+                    Soundeffect(se_clanging_sound, 100);
                     pline("Fortunately, you are wearing a hard helmet.");
                     dmg = 2;
                 } else if (flags.verbose) {
@@ -1429,6 +1430,7 @@ trapeffect_sqky_board(
             if (IndexOk(trap->tnote, tsnds)) {
                 Soundeffect(tsnds[trap->tnote], 50);
             }
+            Soundeffect(se_board_squeaks_loudly, 80);
             pline("A board beneath you %s%s%s.",
                   Deaf ? "vibrates" : "squeaks ",
                   Deaf ? "" : trapnote(trap, FALSE),
@@ -1446,6 +1448,7 @@ trapeffect_sqky_board(
                 if (IndexOk(trap->tnote, tsnds)) {
                     Soundeffect(tsnds[trap->tnote], 50);
                 }
+                Soundeffect(se_board_squeak, 60);
                 pline_mon(mtmp,
                       "A board beneath %s squeaks %s loudly.",
                       mon_nam(mtmp), trapnote(trap, FALSE));
@@ -1465,6 +1468,8 @@ trapeffect_sqky_board(
                              ((mdistu(mtmp) <= range * range)
                                 ? 40 : 20));
             }
+            Soundeffect(se_board_squeak,
+                        (mdistu(mtmp) <= range * range) ? 40 : 20);
             You_hear("%s squeak %s.", trapnote(trap, FALSE),
                      (mdistu(mtmp) <= range * range)
                         ? "nearby" : "in the distance");

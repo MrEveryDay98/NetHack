@@ -1383,9 +1383,10 @@ toss_up(struct obj *obj, boolean hitsroof)
             /* note: 'harmless' and 'petrifier' are mutually exclusive */
             if ((less_damage && dmg < (Upolyd ? u.mh : u.uhp)) || harmless) {
                 if (!artimsg) {
-                    if (!harmless) /* !harmless => less_damage here */
+                    if (!harmless) { /* !harmless => less_damage here */
+                        Soundeffect(se_clanging_sound, 100);
                         pline("Fortunately, you are wearing a hard helmet.");
-                    else
+                    } else
                         pline("Unfortunately, you are wearing %s.",
                               an(helm_simple_name(uarmh))); /* helm or hat */
                 }
@@ -2640,11 +2641,14 @@ breakmsg(struct obj *obj, boolean in_view)
         FALLTHROUGH;
     /*FALLTHRU*/
     case POT_WATER: /* really, all potions */
-        if (!in_view)
+        if (!in_view) {
+            Soundeffect(se_crash_something_broke, 60);
             You_hear("%s shatter!", something);
-        else
+        } else {
+            Soundeffect(se_crash, 80);
             pline("%s shatter%s%s!", Doname2(obj),
                   (obj->quan == 1L) ? "s" : "", to_pieces);
+        }
         break;
     case EGG:
     case MELON:

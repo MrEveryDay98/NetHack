@@ -5658,6 +5658,8 @@ paranoid_ynq(
                                                : "[yes|n] (n)");
         int k, trylimit = 6; /* 1 normal, 5 more with "Yes or No:" prefix */
 
+        Soundeffect(se_paranoid_confirmation, 60);
+
         copynchars(pbuf, prompt, BUFSZ - 1);
         /* in addition to being paranoid about this particular
            query, we might be even more paranoid about all paranoia

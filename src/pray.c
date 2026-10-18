@@ -1549,6 +1549,7 @@ offer_real_amulet(struct obj *otmp, aligntyp altaralign)
         /* Moloch's high altar at the bottom of Gehennom. */
         if (u.ualign.record > -99)
             u.ualign.record = -99;
+        Soundeffect(se_chant, 70);
         pline("An invisible choir chants, and you are bathed in darkness...");
         /*[apparently shrug/snarl can be sensed without being seen]*/
         pline("%s shrugs and retains dominion over %s,", Moloch, u_gname());
@@ -2462,6 +2463,7 @@ doturn(void)
         aggravate();
         return ECMD_TIME;
     }
+    Soundeffect(se_chant, 80);
     pline("Calling upon %s, you chant an arcane formula.", Gname);
     exercise(A_WIS, TRUE);
 

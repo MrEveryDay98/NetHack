@@ -428,6 +428,30 @@ growl(struct monst *mtmp)
     else
         growl_verb = growl_sound(mtmp);
     if (growl_verb) {
+        if (!Hallucination) {
+            static const struct {
+                int msound;
+                enum sound_effect_entries se;
+            } growl_se[] = {
+                { MS_MEW, se_hiss }, { MS_HISS, se_snake_rattle },
+                { MS_BARK, se_canine_growl }, { MS_GROWL, se_growl },
+                { MS_ROAR, se_roar }, { MS_BELLOW, se_bovine_bellow },
+                { MS_BUZZ, se_angry_drone }, { MS_SQEEK, se_squeal },
+                { MS_SQAWK, se_screech }, { MS_NEIGH, se_equine_neigh },
+                { MS_WAIL, se_wail }, { MS_GROAN, se_groan },
+                { MS_MOO, se_bovine_moo },
+            };
+            enum sound_effect_entries se = se_scream;
+            int k;
+
+            for (k = 0; k < (int) SIZE(growl_se); k++)
+                if (growl_se[k].msound == mtmp->data->msound)
+                    se = growl_se[k].se;
+            Soundeffect(se, 80);
+#ifndef SND_LIB_INTEGRATED
+            nhUse(se);
+#endif
+        }
         if (canseemon(mtmp) || !Deaf) {
             pline("%s %s!", Monnam(mtmp), vtense((char *) 0, growl_verb));
             iflags.last_msg = PLNMSG_GROWL;
@@ -505,6 +529,9 @@ whimper(struct monst *mtmp)
     else
         switch (mtmp->data->msound) {
         case MS_MEW:
+            se = se_feline_yip;
+            whimper_verb = "whimper";
+            break;
         case MS_GROWL:
             whimper_verb = "whimper";
             break;
@@ -852,19 +879,28 @@ domonnoise(struct monst *mtmp)
         break;
     case MS_BARK:
         if (flags.moonphase == FULL_MOON && night()) {
+            Soundeffect(se_canine_howl, 80);
             pline_msg = "howls.";
         } else if (mtmp->mpeaceful) {
             if (mtmp->mtame
                 && (mtmp->mconf || mtmp->mflee || mtmp->mtrapped
-                    || svm.moves > EDOG(mtmp)->hungrytime || mtmp->mtame < 5))
+                    || svm.moves > EDOG(mtmp)->hungrytime || mtmp->mtame < 5)) {
+                Soundeffect(se_canine_whine, 60);
                 pline_msg = "whines.";
-            else if (mtmp->mtame && EDOG(mtmp)->hungrytime > svm.moves + 1000)
+            } else if (mtmp->mtame
+                       && EDOG(mtmp)->hungrytime > svm.moves + 1000) {
+                Soundeffect(se_canine_yip, 60);
                 pline_msg = "yips.";
-            else {
-                if (ptr != &mons[PM_DINGO]) /* dingos do not actually bark */
-                    pline_msg = "barks.";
+            } else if (ptr != &mons[PM_DINGO]) {
+                Soundeffect(se_canine_bark, 80);
+                pline_msg = "barks.";
+            } else {
+                /* dingos do not actually bark (VoxHack: they yowl) */
+                Soundeffect(se_canine_yowl, 70);
+                pline_msg = "yowls.";
             }
         } else {
+            Soundeffect(se_canine_growl, 80);
             pline_msg = "growls.";
         }
         break;

@@ -120,7 +120,7 @@ mon_yells(struct monst *mon, const char *shout)
         if (canspotmon(mon)) {
             pline_mon(mon, "%s yells:", Amonnam(mon));
         } else {
-            /* Soundeffect(se_someone_yells, 75); */
+            Soundeffect(se_someone_yells, 75);
             You_hear("someone yell:");
         }
         SetVoice(mon, 0, 80, 0);

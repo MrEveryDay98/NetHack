@@ -94,7 +94,7 @@ mkcavearea(boolean rockit)
     boolean waslit = rm_waslit();
 
     if (rockit) {
-        Soundeffect(se_crashing_rock, 100);
+        Soundeffect(se_crashed_ceiling, 100);
         pline("Crash!  The ceiling collapses around you!");
     } else {
         pline("A mysterious force %s cave around you!",

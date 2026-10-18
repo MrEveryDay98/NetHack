@@ -271,6 +271,7 @@ expels(
     disp.botl = TRUE;
     if (message) {
         if (digests(mdat)) {
+            Soundeffect(se_splat_from_engulf, 80);
             You("get regurgitated!");
         } else if (enfolds(mdat)) {
             pline_mon(mtmp, "%s unfolds and you are released!", Monnam(mtmp));
@@ -292,6 +293,7 @@ expels(
                         break;
                     }
                 } else {
+                    Soundeffect(se_splat_from_engulf, 80);
                     Strcpy(blast, " with a squelch");
                 }
                 You("get expelled from %s%s!", mon_nam(mtmp), blast);
@@ -1503,6 +1505,7 @@ gulpmu(struct monst *mtmp, struct attack *mattk)
         break;
     case AD_ELEC:
         if (!mtmp->mcan && rn2(2)) {
+            Soundeffect(se_crackling, 80);
             pline_The("air around you crackles with electricity.");
             if (Shock_resistance) {
                 shieldeff(u.ux, u.uy);

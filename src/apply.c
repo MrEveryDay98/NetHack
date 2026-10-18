@@ -2711,9 +2711,11 @@ use_stone(struct obj *tstone)
             You_feel("something shatter.");
         else if (Hallucination)
             pline("Oh, wow, look at the pretty shards.");
-        else
+        else {
+            Soundeffect(se_sharp_crack, 80);
             pline("A sharp crack shatters %s%s.",
                   (obj->quan > 1L) ? "one of " : "", the(xname(obj)));
+        }
         useup(obj);
         return ECMD_TIME;
     }
