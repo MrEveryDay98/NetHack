@@ -777,6 +777,10 @@ hitum(struct monst *mon, struct attack *uattk)
 
     tmp = find_roll_to_hit(mon, uattk->aatyp, uwep, &attknum, &armorpenalty);
     mon_maybe_unparalyze(mon);
+#ifdef NHV_FREEMOVE
+    /* (each swing, for the host's animation: 0 right hand, 1 left) */
+    nhv_combat_event("uswing", 0, mon->m_id, 1);
+#endif
     dieroll = rnd(20);
     mhit = (tmp > dieroll || u.uswallow);
     if (tmp > dieroll)
@@ -801,6 +805,9 @@ hitum(struct monst *mon, struct attack *uattk)
         tmp = find_roll_to_hit(mon, uattk->aatyp, uswapwep, &attknum,
                                &armorpenalty);
         mon_maybe_unparalyze(mon);
+#ifdef NHV_FREEMOVE
+        nhv_combat_event("uswing", 1, mon->m_id, 1); /* (secondary / fist) */
+#endif
         dieroll = rnd(20);
         mhit = (tmp > dieroll || u.uswallow);
         malive = known_hitum(mon, secondwep, &mhit, tmp, armorpenalty, uattk,
@@ -5520,6 +5527,10 @@ hmonas(struct monst *mon)
             tmp = find_roll_to_hit(mon, AT_WEAP, weapon, &attknum,
                                    &armorpenalty);
             mon_maybe_unparalyze(mon);
+#ifdef NHV_FREEMOVE
+            nhv_combat_event("uswing", (originalweapon == &uswapwep) ? 1 : 0,
+                             mon->m_id, 1);
+#endif
             dieroll = rnd(20);
             dhit = (tmp > dieroll || u.uswallow);
             if (multi_weap > 1)
@@ -5570,6 +5581,10 @@ hmonas(struct monst *mon)
             tmp = find_roll_to_hit(mon, mattk->aatyp, (struct obj *) 0,
                                    &attknum, &armorpenalty);
             mon_maybe_unparalyze(mon);
+#ifdef NHV_FREEMOVE
+            /* (claws, bites...: one swing each, the hands taking turns) */
+            nhv_combat_event("uswing", i % 2, mon->m_id, 1);
+#endif
             dieroll = rnd(20);
             dhit = (tmp > dieroll || u.uswallow);
             if (dhit) {
