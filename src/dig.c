@@ -1177,6 +1177,28 @@ use_pick_axe2(struct obj *obj)
     } else if (u.dz < 0) {
         if (Levitation)
             You("don't have enough leverage.");
+#ifdef NHV_FREEMOVE
+        /* VoxHack: a pick reaches the ceiling, and does what a wand of
+           digging zapped upward does: a rock comes loose onto your head */
+        else if (ispick && !Is_airlevel(&u.uz) && !Is_waterlevel(&u.uz)) {
+            struct obj *rock;
+            int dmg;
+
+            You("dig into the %s.", ceiling(u.ux, u.uy));
+            You("loosen a rock from the %s.", ceiling(u.ux, u.uy));
+            pline("It falls on your %s!", body_part(HEAD));
+            if (hard_helmet(uarmh))
+                Soundeffect(se_clanging_sound, 100);
+            dmg = rnd(hard_helmet(uarmh) ? 2 : 6);
+            losehp(Maybe_Half_Phys(dmg), "falling rock", KILLED_BY_AN);
+            rock = mksobj_at(ROCK, u.ux, u.uy, FALSE, FALSE);
+            if (rock) {
+                (void) xname(rock); /* set dknown, maybe bknown */
+                stackobj(rock);
+            }
+            newsym(u.ux, u.uy);
+        }
+#endif
         else
             You_cant("reach the %s.", ceiling(u.ux, u.uy));
     } else if (!u.dx && !u.dy && !u.dz) {
