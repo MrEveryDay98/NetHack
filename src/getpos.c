@@ -835,7 +835,13 @@ getpos(coord *ccp, boolean force, const char *goal)
         mMoOdDxX[i] = gc.Cmd.spkeys[mMoOdDxX_def[i]];
     mMoOdDxX[SIZE(mMoOdDxX_def)] = '\0';
 
-    if (handle_tip(TIP_GETPOS))
+    if (
+#ifdef NHV_FREEMOVE
+        /* (NetHack Voxel picks the place on a clickable map: no tip about
+           moving a cursor with the keyboard) */
+        !nhv_freemove &&
+#endif
+        handle_tip(TIP_GETPOS))
         show_goal_msg = TRUE; /* tip has overwritten prompt in mesg window */
 
     if (!goal)
