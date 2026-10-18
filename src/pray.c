@@ -705,6 +705,7 @@ angrygods(aligntyp resp_god)
 {
     int maxanger, new_ublesscnt;
 
+    NHV_HOOK("god_angry");
     if (Inhell)
         resp_god = A_NONE;
     u.ublessed = 0; /* lose divine protection */
@@ -1447,6 +1448,7 @@ gods_upset(aligntyp g_align)
 staticfn void
 consume_offering(struct obj *otmp)
 {
+    NHV_HOOK("sacrifice_accepted");
     if (Hallucination)
         switch (rn2(3)) {
         case 0:
@@ -1671,6 +1673,7 @@ offer_different_alignment_altar(
             levl[u.ux][u.uy].altarmask = Align2amask(u.ualign.type);
             if (shrine)
                 levl[u.ux][u.uy].altarmask |= AM_SHRINE;
+            NHV_HOOK("altar_converted");
             newsym(u.ux, u.uy); /* in case Invisible to self */
             if (!Blind)
                 pline_The("altar glows %s.",
@@ -2011,6 +2014,7 @@ offer_corpse(struct obj *otmp, boolean highaltar, aligntyp altaralign)
     value = eval_offering(otmp, altaralign);
     if (value == 0) {
         /* too old; don't give undead or unicorn bonus or penalty */
+        NHV_HOOK("sacrifice_ignored");
         pline1(nothing_happens);
         return;
     }
