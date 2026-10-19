@@ -442,9 +442,17 @@ ask_do_tutorial(void)
 
         rc = nh_basename(get_configfile(), TRUE);
         norc = !strcmp(get_configfile(), "/dev/null");
+#ifdef NHV_FREEMOVE
+        /* VoxHack: the question is turned off in its own options menu */
+        nhUse(rc);
+        nhUse(norc);
+        Strcpy(buf, "(Options > NetHack options > Offer the tutorial"
+                    " turns this question off.)");
+#else
         Snprintf(buf, sizeof buf,
                  "Put \"OPTIONS=!tutorial\" in %s to skip this query.",
                  (rc && *rc && !norc) ? rc : "your configuration file");
+#endif
         do {
             win = create_nhwindow(NHW_MENU);
             start_menu(win, MENU_BEHAVE_STANDARD);
