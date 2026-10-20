@@ -506,20 +506,31 @@ kick_object(coordxy x, coordxy y, char *kickobjnam)
 #ifdef NHV_FREEMOVE
 /* #nhvkickhere dx dy: NetHack Voxel. In 3D you can stand right beside a
    chest that is on your own square; kicking it sends it (dx, dy), the way
-   you face, as if kicked from the square behind you. */
+   you face, as if kicked from the square behind you. A monster sharing
+   your square is kicked first, before anything under it (as a kick at a
+   square hits its monster before its objects). */
 int
 donhvkickhere(void)
 {
     char buf[BUFSZ];
     int dx = nhv_cmd_args[0], dy = nhv_cmd_args[1];
+    struct monst *mtmp = m_at(u.ux, u.uy);
 
+    if (!dx && !dy)
+        dx = 1;
+    u.dx = sgn(dx), u.dy = sgn(dy), u.dz = 0;
+    if (mtmp && mtmp != u.usteed && !u.uswallow) {
+        if (!maybe_kick_monster(mtmp, u.ux, u.uy))
+            return svc.context.move ? ECMD_TIME : ECMD_OK;
+        wake_nearby(FALSE);
+        u_wipe_engr(2);
+        kick_monster(mtmp, u.ux, u.uy);
+        return ECMD_TIME;
+    }
     if (!OBJ_AT(u.ux, u.uy)) {
         You("kick at empty space.");
         return ECMD_TIME;
     }
-    if (!dx && !dy)
-        dx = 1;
-    u.dx = sgn(dx), u.dy = sgn(dy), u.dz = 0;
     if (!kick_object(u.ux, u.uy, buf) && *buf)
         pline("Thump!");
     return ECMD_TIME;
