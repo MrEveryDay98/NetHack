@@ -4120,6 +4120,15 @@ donhvloot(void)
         nhv_container_event("fail", id);
         return ECMD_OK;
     }
+    if (cobj->olocked && !held) {
+        /* locked: as #loot does, "It is locked." and then, by the
+           autounlock option, offer the key / lock pick / credit card
+           carried ("Unlock it with your lock pick?"), check for traps,
+           or #force it */
+        res = do_loot_cont(&cobj, 1, 1);
+        nhv_container_event("fail", id);
+        return res;
+    }
     nhv_loot_panel = TRUE;
     nhv_loot_opened = FALSE;
     res = use_container(&cobj, held, FALSE);
