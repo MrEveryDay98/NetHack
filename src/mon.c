@@ -3408,6 +3408,8 @@ monkilled(
 
     if (!DEADMONSTER(mdef))
         return; /* life-saved */
+    /* VoxHack: the same sound as a monster the hero kills (xkilled) */
+    NHV_HOOK_MON("monster_killed", mdef);
     /* extra message if pet golem is completely destroyed;
        if not visible, this will follow "you have a sad feeling" */
     if (mdef->mtame) {
