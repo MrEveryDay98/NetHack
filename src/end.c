@@ -1101,6 +1101,15 @@ done(int how)
             survive = TRUE;
         }
     }
+#ifdef NHV_FREEMOVE
+    /* wizard mode, noclip: death turned away */
+    if (!survive && nhv_godmode && how <= GENOCIDED) {
+        pline("You're invulnerable: you don't %s.",
+              (how == CHOKING) ? "choke" : "die");
+        savelife(how);
+        survive = TRUE;
+    }
+#endif
     /* explore and wizard modes offer player the option to keep playing */
     if (!survive && (wizard || discover) && how <= GENOCIDED
 #ifdef HANGUPHANDLING

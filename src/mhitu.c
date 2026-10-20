@@ -759,7 +759,11 @@ mattacku(struct monst *mtmp)
         mdat = mtmp->data; /* update cached value in case of were change */
     }
 
-    if (u.uinvulnerable) { /* in the midst of successful prayer */
+    if (u.uinvulnerable /* in the midst of successful prayer */
+#ifdef NHV_FREEMOVE
+        || nhv_godmode /* (wizard mode, noclip) */
+#endif
+        ) {
         /* monsters won't attack you */
         if (mtmp == u.ustuck) {
             pline_mon(mtmp, "%s loosens its grip slightly.", Monnam(mtmp));

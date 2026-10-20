@@ -37,6 +37,9 @@ extern int donhvpass(void);
    reach the bottom, though not trapped there */
 extern boolean nhv_in_pit;
 extern int donhvpit(void);
+/* wizard mode's invulnerability (VoxHack's noclip): no damage, no death */
+extern boolean nhv_godmode;
+extern int donhvgod(void);
 /* the hero's body is walking from square to square (#nhvmove, #nhvpass):
    entering a trap's square doesn't set it off - the host says when the
    body touches the trap (#nhvtrap); a pit, a real hole, still does */

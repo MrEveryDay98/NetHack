@@ -4304,6 +4304,10 @@ losehp(int n, const char *knam, schar k_format)
         return;
     }
 #endif
+#ifdef NHV_FREEMOVE
+    if (nhv_godmode && n > 0)
+        return; /* wizard mode, noclip: no damage */
+#endif
     disp.botl = TRUE; /* u.uhp or u.mh is changing */
     end_running(TRUE);
     if (Upolyd) {
