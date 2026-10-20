@@ -483,6 +483,16 @@ moveloop_core(void)
     svc.context.move = 1;
 
     if (gm.multi >= 0 && go.occupation) {
+#ifdef NHV_FREEMOVE
+        /* a counted search or wait (20s): each turn of it when the host's
+           clock says a turn has passed, so it plays out in the world and
+           whatever interrupts it meanwhile does; stopped by the player */
+        if (nhv_freemove && nhv_timed_occupation() && !nhv_repeat_turn()) {
+            stop_occupation();
+            svc.context.move = 0;
+            return;
+        }
+#endif
 #if defined(MICRO) || defined(WIN32CON)
         mvl_abort_lev = 0;
         if (kbhit()) {

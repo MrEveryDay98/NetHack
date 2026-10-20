@@ -52,6 +52,10 @@ extern unsigned long nhv_fixed_seed;
 extern int donhvgoto(void);
 /* the hero is helpless this turn: wait for the host's clock (nhv_win.c) */
 extern void nhv_helpless_turn(void);
+/* a counted search or wait (20s) waits for the host's clock before each
+   turn of it; FALSE: stopped (nhv_win.c) */
+extern boolean nhv_repeat_turn(void);
+extern boolean nhv_timed_occupation(void);
 extern int donhvattack(void);
 /* #nhvpole id: apply the wielded polearm / lance at that monster (apply.c's
    use_pole, aimed at nhv_pole_x, nhv_pole_y instead of asking) */

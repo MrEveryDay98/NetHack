@@ -177,6 +177,15 @@ timed_occupation(void)
     return gm.multi > 0;
 }
 
+#ifdef NHV_FREEMOVE
+/* is the occupation a counted command's (20s: search, wait)? */
+boolean
+nhv_timed_occupation(void)
+{
+    return go.occupation == timed_occupation;
+}
+
+#endif
 /* If you have moved since initially setting some occupations, they
  * now shouldn't be able to restart.
  *
