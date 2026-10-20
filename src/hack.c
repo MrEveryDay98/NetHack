@@ -206,7 +206,7 @@ dopush(
     if (glyph_is_invisible(levl[rx][ry].glyph))
         unmap_object(rx, ry);
     otmp->next_boulder = 0;
-    NHV_HOOK("boulder_push");
+    NHV_HOOK_AT("boulder_push", rx, ry);
     movobj(otmp, rx, ry); /* does newsym(rx,ry) */
     if (Blind) {
         feel_location(rx, ry);
@@ -476,7 +476,7 @@ moverock_core(coordxy sx, coordxy sy)
                     pline("There's %s on the other side.", a_monnam(mtmp));
                     deliver_part1 = TRUE;
                 } else {
-                    Soundeffect(se_monster_behind_boulder, 50);
+                    SoundeffectMon(se_monster_behind_boulder, 50, mtmp);
                     You_hear("a monster behind %s.", the(xname(otmp)));
                     if (!Deaf)
                         deliver_part1 = TRUE;
@@ -557,7 +557,7 @@ moverock_core(coordxy sx, coordxy sy)
                     return sobj_at(BOULDER, sx, sy) ? -1 : 0;
                 case HOLE:
                 case TRAPDOOR:
-                    Soundeffect(se_kerplunk_boulder_gone, 40);
+                    SoundeffectAt(se_kerplunk_boulder_gone, 40, rx, ry);
                     if (Blind)
                         pline("Kerplunk!  You no longer feel %s.",
                               the(xname(otmp)));
@@ -3754,7 +3754,7 @@ check_special_room(boolean newlev)
 
             if (oracle) {
                 SetVoice(oracle, 0, 80, 0);
-                NHV_HOOK("delphi_welcome");
+                NHV_HOOK_MON("delphi_welcome", oracle);
                 if (!oracle->mpeaceful)
                     verbalize("You're in Delphi, %s.", svp.plname);
                 else

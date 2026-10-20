@@ -2378,7 +2378,7 @@ drop_boulder_on_monster(coordxy x, coordxy y, boolean confused, boolean byu)
         mdmg = dmgval(otmp2, mtmp) * otmp2->quan;
         if (helmet) {
             if (hard_helmet(helmet)) {
-                Soundeffect(se_clanging_sound, 80);
+                SoundeffectMon(se_clanging_sound, 80, mtmp);
                 if (canspotmon(mtmp))
                     pline("Fortunately, %s is wearing a hard helmet.",
                           mon_nam(mtmp));

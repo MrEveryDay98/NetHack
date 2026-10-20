@@ -383,7 +383,7 @@ ohitmon(
         if (ismimic)
             seemimic(mtmp);
         mtmp->msleeping = 0;
-        Soundeffect(se_splat_egg, 35);
+        SoundeffectMon(se_splat_egg, 35, mtmp);
         if (vis) {
             if (otmp->otyp == EGG) {
                 pline("Splat!  %s is hit with %s egg!", Monnam(mtmp),
@@ -966,7 +966,7 @@ return_from_mtoss(
             if (!Deaf && !Underwater) {
                 /* Some sound effects when item lands in water or lava */
                 if (is_pool(x, y) || (is_lava(x, y) && !is_flammable(otmp))) {
-                    Soundeffect(se_splash, 50);
+                    SoundeffectAt(se_splash, 50, x, y);
                     pline((weight(otmp) > 9) ? "Splash!" : "Plop!");
                 }
             }
@@ -1037,7 +1037,7 @@ spitmm(struct monst *mtmp, struct attack *mattk, struct monst *mtarg)
                 pline("A dry rattle comes from %s throat.",
                       s_suffix(mon_nam(mtmp)));
             } else {
-                Soundeffect(se_dry_throat_rattle, 50);
+                SoundeffectMon(se_dry_throat_rattle, 50, mtmp);
                 You_hear("a dry rattle nearby.");
             }
         }
@@ -1119,7 +1119,7 @@ breamm(struct monst *mtmp, struct attack *mattk, struct monst *mtarg)
                 if (canseemon(mtmp)) {
                     pline("%s coughs.", Monnam(mtmp));
                 } else {
-                    Soundeffect(se_cough, 100);
+                    SoundeffectMon(se_cough, 100, mtmp);
                     You_hear("a cough.");
                 }
             }
@@ -1464,7 +1464,7 @@ hit_bars(
             if (cansee(barsx, barsy) && !nodissolve) {
                 pline_The("iron bars are dissolved!");
             } else {
-                Soundeffect(se_angry_snakes, 100);
+                SoundeffectAt(se_angry_snakes, 100, barsx, barsy);
                 You_hear(Hallucination ? "angry snakes!"
                                        : "a hissing noise.");
             }
@@ -1491,7 +1491,7 @@ hit_bars(
                            ? 4
                            : SIZE(barsounds) - 1;
 
-            Soundeffect(se[bsindx], 100);
+            SoundeffectAt(se[bsindx], 100, barsx, barsy);
             pline("%s!", barsounds[bsindx]);
             nhUse(se[bsindx]);
         }

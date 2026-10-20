@@ -449,9 +449,9 @@ container_impact_dmg(
             if (otmp->otyp == EGG && otmp->spe && ismnum(otmp->corpsenm))
                 change_luck(-1);
             if (otmp->otyp == EGG) {
-                Soundeffect(se_egg_cracking, 25);
+                SoundeffectAt(se_egg_cracking, 25, x, y);
             } else {
-                Soundeffect(se_glass_shattering, 25);
+                SoundeffectAt(se_glass_shattering, 25, x, y);
             }
             You_hear("a muffled %s.", result);
             if (costly) {
@@ -685,11 +685,11 @@ really_kick_object(coordxy x, coordxy y)
         boolean otrp = gk.kickedobj->otrapped;
 
         if (range < 2)
-            NHV_HOOK("kick_box_thud"), pline("THUD!");
+            NHV_HOOK_AT("kick_box_thud", x, y), pline("THUD!");
         container_impact_dmg(gk.kickedobj, x, y);
         if (gk.kickedobj->olocked) {
             if (!rn2(5) || (martial() && !rn2(2))) {
-                NHV_HOOK("break_open_lock"), You("break open the lock!");
+                NHV_HOOK_AT("break_open_lock", x, y), You("break open the lock!");
                 breakchestlock(gk.kickedobj, FALSE);
                 if (otrp)
                     (void) chest_trap(gk.kickedobj, LEG, FALSE);
@@ -697,7 +697,7 @@ really_kick_object(coordxy x, coordxy y)
             }
         } else {
             if (!rn2(3) || (martial() && !rn2(2))) {
-                NHV_HOOK("lid_slams_open_falls_shut"), pline_The("lid slams open, then falls shut.");
+                NHV_HOOK_AT("lid_slams_open_falls_shut", x, y), pline_The("lid slams open, then falls shut.");
                 gk.kickedobj->lknown = 1;
                 if (otrp)
                     (void) chest_trap(gk.kickedobj, LEG, FALSE);
@@ -719,7 +719,7 @@ really_kick_object(coordxy x, coordxy y)
      */
     if (range < 2) {
         if (!Is_box(gk.kickedobj))
-            NHV_HOOK("kick_box_thud"), pline("Thump!");
+            NHV_HOOK_AT("kick_box_thud", x, y), pline("Thump!");
         return (!rn2(3) || martial());
     }
 
@@ -972,12 +972,12 @@ kick_door(coordxy x, coordxy y, int avrg_attrib)
             gm.maploc->doormask = D_NODOOR;
             b_trapped("door", FOOT);
         } else if (ACURR(A_STR) > 18 && !rn2(5) && !shopdoor) {
-            Soundeffect(se_kick_door_it_shatters, 50);
+            SoundeffectAt(se_kick_door_it_shatters, 50, x, y);
             pline("As you kick the door, it shatters to pieces!");
             exercise(A_STR, TRUE);
             gm.maploc->doormask = D_NODOOR;
         } else {
-            Soundeffect(se_kick_door_it_crashes_open, 50);
+            SoundeffectAt(se_kick_door_it_crashes_open, 50, x, y);
             pline("As you kick the door, it crashes open!");
             exercise(A_STR, TRUE);
             gm.maploc->doormask = D_BROKEN;
@@ -997,7 +997,7 @@ kick_door(coordxy x, coordxy y, int avrg_attrib)
         /* note: this used to be unconditional "WHAMMM!!!" but that has a
            fairly strong connotation of noise that a deaf hero shouldn't
            hear; we've kept the extra 'm's and one of the extra '!'s */
-        NHV_HOOK("kick_door_whamm"),
+        NHV_HOOK_AT("kick_door_whamm", x, y),
             pline("%s!!", (Deaf || !rn2(3)) ? "Thwack" : "Whammm");
         if (in_town(x, y))
             (void) get_iter_mons_xy(watchman_door_damage, x, y);
@@ -1011,7 +1011,7 @@ kick_nondoor(coordxy x, coordxy y, int avrg_attrib)
     if (gm.maploc->typ == SDOOR) {
         if (!Levitation && rn2(30) < avrg_attrib) {
             cvt_sdoor_to_door(gm.maploc); /* ->typ = DOOR */
-            Soundeffect(se_crash_door, 40);
+            SoundeffectAt(se_crash_door, 40, x, y);
             pline("Crash!  %s a secret door!",
                   /* don't "kick open" when it's locked
                      unless it also happens to be trapped */
@@ -1036,7 +1036,7 @@ kick_nondoor(coordxy x, coordxy y, int avrg_attrib)
     }
     if (gm.maploc->typ == SCORR) {
         if (!Levitation && rn2(30) < avrg_attrib) {
-            Soundeffect(se_crash_door, 40);
+            SoundeffectAt(se_crash_door, 40, x, y);
             pline("Crash!  You kick open a secret passage!");
             exercise(A_DEX, TRUE);
             gm.maploc->typ = CORR;
@@ -1058,7 +1058,7 @@ kick_nondoor(coordxy x, coordxy y, int avrg_attrib)
             gm.maploc->looted = 0; /* don't leave loose ends.. */
             gm.maploc->typ = ROOM;
             (void) mkgold((long) rnd(200), x, y);
-            Soundeffect(se_crash_throne_destroyed, 60);
+            SoundeffectAt(se_crash_throne_destroyed, 60, x, y);
             if (Blind)
                 pline("CRASH!  You destroy it.");
             else {
@@ -1234,7 +1234,7 @@ kick_nondoor(coordxy x, coordxy y, int avrg_attrib)
             return ECMD_TIME;
         }
         if (rn2(5)) {
-            Soundeffect(se_klunk_pipe, 60);
+            SoundeffectAt(se_klunk_pipe, 60, x, y);
             if (!Deaf)
                 pline("Klunk!  The pipes vibrate noisily.");
             else
@@ -1243,7 +1243,7 @@ kick_nondoor(coordxy x, coordxy y, int avrg_attrib)
             return ECMD_TIME;
         } else if (!(gm.maploc->looted & S_LPUDDING) && !rn2(3)
                    && !(svm.mvitals[PM_BLACK_PUDDING].mvflags & G_GONE)) {
-            Soundeffect(se_gushing_sound, 100);
+            SoundeffectAt(se_gushing_sound, 100, x, y);
             if (Blind) {
                 if (!Deaf)
                     You_hear("a gushing sound.");

@@ -447,7 +447,7 @@ explode(
             generic = TRUE;
         }
         if (!Deaf && olet != SCROLL_CLASS) {
-            Soundeffect(se_blast, 75);
+            SoundeffectAt(se_blast, 75, x, y);
             You_hear("a blast.");
             didmsg = TRUE;
         }
@@ -782,7 +782,7 @@ scatter(
                 if (cansee(sx, sy)) {
                     pline("%s apart.", Tobjnam(otmp, "break"));
                 } else {
-                    Soundeffect(se_stone_breaking, 100);
+                    SoundeffectAt(se_stone_breaking, 100, sx, sy);
                     You_hear("stone breaking.");
                 }
                 fracture_rock(otmp);
@@ -800,7 +800,7 @@ scatter(
                 if (cansee(sx, sy)) {
                     pline("%s.", Tobjnam(otmp, "crumble"));
                 } else {
-                    Soundeffect(se_stone_crumbling, 100);
+                    SoundeffectAt(se_stone_crumbling, 100, sx, sy);
                     You_hear("stone crumbling.");
                 }
                 (void) break_statue(otmp);

@@ -1490,7 +1490,7 @@ mdig_tunnel(struct monst *mtmp)
     if (IS_WALL(here->typ)) {
         /* KMH -- Okay on arboreal levels (room walls are still stone) */
         if (flags.verbose && !rn2(5)) {
-            Soundeffect(se_crashing_rock, 75);
+            SoundeffectMon(se_crashing_rock, 75, mtmp);
             You_hear("crashing rock.");
         }
         if (*in_rooms(mtmp->mx, mtmp->my, SHOPBASE))

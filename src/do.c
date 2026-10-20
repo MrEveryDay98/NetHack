@@ -115,9 +115,9 @@ boulder_hits_pool(
                           what);
                 } else if (!Deaf) {
                     if (lava) {
-                        Soundeffect(se_sizzling, 100);
+                        SoundeffectAt(se_sizzling, 100, rx, ry);
                     } else {
-                        Soundeffect(se_splash, 100);
+                        SoundeffectAt(se_splash, 100, rx, ry);
                     }
                     You_hear("a%s splash.", lava ? " sizzling" : "");
                 }
@@ -247,7 +247,7 @@ flooreffects(
                           : (ttyp == HOLE) ? "plugs a hole"
                             : "fills a pit");
             } else {
-                Soundeffect(se_boulder_drop, 100);
+                SoundeffectAt(se_boulder_drop, 100, x, y);
                 You_hear("a boulder %s.", verb);
             }
         }
@@ -2227,7 +2227,7 @@ revive_corpse(struct obj *corpse)
                           canspotmon(mtmp) ? Amonnam(mtmp) : Something);
                     newsym(mtmp->mx, mtmp->my);
                 } else if (mdistu(mtmp) < 5*5) {
-                    Soundeffect(se_scratching, 50);
+                    SoundeffectMon(se_scratching, 50, mtmp);
                     You_hear("scratching noises.");
                 }
                 fill_pit(mtmp->mx, mtmp->my);

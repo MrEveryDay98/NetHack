@@ -2278,7 +2278,7 @@ bhito(struct obj *obj, struct obj *otmp)
                (the sound could be implicit) */
             maybelearnit = cansee(obj->ox, obj->oy) || !Deaf;
             if (obj->otyp == BOULDER) {
-                Soundeffect(se_crumbling_sound, 75);
+                SoundeffectAt(se_crumbling_sound, 75, obj->ox, obj->oy);
                 if (cansee(obj->ox, obj->oy))
                     pline_The("boulder falls apart.");
                 else
@@ -4247,7 +4247,7 @@ boomhit(struct obj *obj, int dx, int dy)
         tmp_at(gb.bhitpos.x, gb.bhitpos.y);
         nh_delay_output();
         if (IS_SINK(levl[gb.bhitpos.x][gb.bhitpos.y].typ)) {
-            Soundeffect(se_boomerang_klonk, 75);
+            SoundeffectAt(se_boomerang_klonk, 75, gb.bhitpos.x, gb.bhitpos.y);
             if (!Deaf)
                 pline("Klonk!");
             wake_nearto(gb.bhitpos.x, gb.bhitpos.y, 20);
@@ -5283,7 +5283,7 @@ zap_over_floor(
 
             if (IS_WATERWALL(lev->typ) || (lavawall && rn2(chance))) {
                 /* For now, don't let WATER freeze. */
-                Soundeffect(se_soft_crackling, 100);
+                SoundeffectAt(se_soft_crackling, 100, x, y);
                 if (see_it)
                     pline_The("%s freezes for a moment.",
                               hliquid(lavawall ? "lava" : "water"));
@@ -5316,7 +5316,7 @@ zap_over_floor(
                 }
                 bury_objs(x, y);
                 if (!lava) {
-                    Soundeffect(se_soft_crackling, 30);
+                    SoundeffectAt(se_soft_crackling, 30, x, y);
                 }
                 if (see_it) {
                     if (lava)

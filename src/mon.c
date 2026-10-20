@@ -1509,7 +1509,7 @@ meatmetal(struct monst *mtmp)
                                   Monnam(mtmp), otmpname);
                 } else {
                     if (flags.verbose) {
-                        Soundeffect(se_crunching_sound, 50);
+                        SoundeffectMon(se_crunching_sound, 50, mtmp);
                         You_hear("a crunching sound.");
                     }
                 }
@@ -1622,7 +1622,7 @@ meatobj(struct monst *mtmp) /* for gelatinous cubes */
                     && objdescr_is(otmp, "YUM YUM"))
                     pline("Yum%c", otmp->blessed ? '!' : '.');
             } else {
-                Soundeffect(se_slurping_sound, 30);
+                SoundeffectMon(se_slurping_sound, 30, mtmp);
                 if (flags.verbose)
                     You_hear("a slurping sound.");
             }
@@ -1701,7 +1701,7 @@ meatcorpse(
                 pline_mon(mtmp, "%s eats %s!",
                           Monnam(mtmp), otmpname);
         } else {
-            Soundeffect(se_masticating_sound, 50);
+            SoundeffectMon(se_masticating_sound, 50, mtmp);
             if (flags.verbose)
                 You_hear("a masticating sound.");
         }
@@ -3482,7 +3482,7 @@ xkilled(
     struct monst *mtmp,
     int xkill_flags) /* 1: suppress mesg, 2: suppress corpse, 4: pacifist */
 {
-    NHV_HOOK("monster_killed");
+    NHV_HOOK_MON("monster_killed", mtmp);
     int tmp, mndx;
     coordxy x = mtmp->mx, y = mtmp->my;
     struct monst museum = cg.zeromonst;

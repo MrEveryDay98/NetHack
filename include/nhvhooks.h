@@ -124,4 +124,30 @@ extern void nhv_trap_hook(int);
 #define NHV_HOOK(id) ((void) 0)
 #endif
 
+/* where a sound happens, so the host plays it from there: at a square or
+   at a monster (its m_id lets the host follow the monster's own model).
+   Used by the next sound only, this turn (nhv_sound.c); a sound on the
+   hero's own square stays centred on the hero. */
+#ifdef NHV_FREEMOVE
+extern void nhv_sound_at(coordxy, coordxy, unsigned);
+#define NHV_HOOK_AT(id, x, y) (nhv_sound_at((x), (y), 0), nhv_sound_hook(id))
+#define NHV_HOOK_MON(id, m) \
+    (nhv_sound_at((m)->mx, (m)->my, (m)->m_id), nhv_sound_hook(id))
+#define SoundeffectAt(seid, vol, x, y) \
+    do {                               \
+        nhv_sound_at((x), (y), 0);     \
+        Soundeffect((seid), (vol));    \
+    } while (0)
+#define SoundeffectMon(seid, vol, m)               \
+    do {                                           \
+        nhv_sound_at((m)->mx, (m)->my, (m)->m_id); \
+        Soundeffect((seid), (vol));                \
+    } while (0)
+#else
+#define NHV_HOOK_AT(id, x, y) ((void) 0)
+#define NHV_HOOK_MON(id, m) ((void) 0)
+#define SoundeffectAt(seid, vol, x, y) Soundeffect((seid), (vol))
+#define SoundeffectMon(seid, vol, m) Soundeffect((seid), (vol))
+#endif
+
 #endif /* NHVHOOKS_H */

@@ -1806,7 +1806,7 @@ throwit(
             if (is_pool(gb.bhitpos.x, gb.bhitpos.y)
                 || (is_lava(gb.bhitpos.x, gb.bhitpos.y)
                     && !is_flammable(obj))) {
-                Soundeffect(se_splash, 50);
+                SoundeffectAt(se_splash, 50, gb.bhitpos.x, gb.bhitpos.y);
                 pline((weight(obj) > WT_SPLASH_THRESHOLD)
                       ? "Splash!" : "Plop!");
             }

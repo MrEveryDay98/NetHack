@@ -206,7 +206,7 @@ castmu(
 
     nomul(0);
     if (rn2(ml * 10) < (mtmp->mconf ? 100 : 20)) { /* fumbled attack */
-        Soundeffect(se_air_crackles, 60);
+        SoundeffectMon(se_air_crackles, 60, mtmp);
         if (canseemon(mtmp) && !Deaf) {
             set_msg_xy(mtmp->mx, mtmp->my);
             pline_The("air crackles around %s.", mon_nam(mtmp));
@@ -692,7 +692,7 @@ mcast_insects(struct monst *mtmp)
             arg = (newseen == oldseen + 1) ? an(makesingular(what))
                                            : whatbuf;
             if (!Deaf) {
-                Soundeffect(se_someone_summoning, 100);
+                SoundeffectMon(se_someone_summoning, 100, mtmp);
                 You_hear("someone summoning something, and %s %s.", arg,
                          vtense(arg, "appear"));
             } else {

@@ -1191,7 +1191,7 @@ mon_break_armor(struct monst *mon, boolean polyspot)
                      "the dragon merges with his scaly armor" is odd
                      and the monster's previous form is already gone */
             } else {
-                Soundeffect(se_cracking_sound, 100);
+                SoundeffectMon(se_cracking_sound, 100, mon);
                 if (vis)
                     pline_mon(mon, "%s breaks out of %s armor!",
                               Monnam(mon), ppronoun);
@@ -1209,7 +1209,7 @@ mon_break_armor(struct monst *mon, boolean polyspot)
                           cloak_simple_name(otmp));
                 m_lose_armor(mon, otmp, polyspot);
             } else {
-                Soundeffect(se_ripping_sound, 100);
+                SoundeffectMon(se_ripping_sound, 100, mon);
                 if (vis)
                     pline_mon(mon, "%s %s tears apart!", s_suffix(Monnam(mon)),
                           cloak_simple_name(otmp));
@@ -1231,7 +1231,7 @@ mon_break_armor(struct monst *mon, boolean polyspot)
         boolean passes_thru_clothes = !(mdat->msize <= MZ_SMALL);
 
         if ((otmp = which_armor(mon, W_ARM)) != 0) {
-            Soundeffect(se_thud, 50);
+            SoundeffectMon(se_thud, 50, mon);
             if (vis)
                 pline_mon(mon, "%s armor falls around %s!",
                           s_suffix(Monnam(mon)), pronoun);
@@ -1275,7 +1275,7 @@ mon_break_armor(struct monst *mon, boolean polyspot)
             m_lose_armor(mon, otmp, polyspot);
         }
         if ((otmp = which_armor(mon, W_ARMS)) != 0) {
-            Soundeffect(se_clank, 50);
+            SoundeffectMon(se_clank, 50, mon);
             if (vis)
                 pline_mon(mon, "%s can no longer hold %s shield!",
                           Monnam(mon), ppronoun);

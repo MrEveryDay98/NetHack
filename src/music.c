@@ -265,7 +265,7 @@ do_pit(coordxy x, coordxy y, unsigned tu_pit)
                 if (cansee(x, y)) {
                     pline("%s falls into a chasm!", Monnam(mtmp));
                 } else if (humanoid(mtmp->data)) {
-                    Soundeffect(se_scream, 50);
+                    SoundeffectMon(se_scream, 50, mtmp);
                     You_hear("a scream!");
                 }
             }
@@ -375,7 +375,7 @@ do_earthquake(int force)
                             pline("%s is shaken loose from the ceiling!",
                                   Amonnam(mtmp));
                         } else if (!is_flyer(mtmp->data)) {
-                            Soundeffect(se_thump, 50);
+                            SoundeffectAt(se_thump, 50, x, y);
                             You_hear("a thump.");
                         }
                     }

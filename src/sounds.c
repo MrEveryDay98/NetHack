@@ -447,7 +447,7 @@ growl(struct monst *mtmp)
             for (k = 0; k < (int) SIZE(growl_se); k++)
                 if (growl_se[k].msound == mtmp->data->msound)
                     se = growl_se[k].se;
-            Soundeffect(se, 80);
+            SoundeffectMon(se, 80, mtmp);
 #ifndef SND_LIB_INTEGRATED
             nhUse(se);
 #endif
@@ -503,7 +503,7 @@ yelp(struct monst *mtmp)
             break;
         }
     if (yelp_verb) {
-        Soundeffect(se, 70);  /* Soundeffect() handles Deaf or not Deaf */
+        SoundeffectMon(se, 70, mtmp);  /* Soundeffect() handles Deaf or not Deaf */
         pline("%s %s!", Monnam(mtmp), vtense((char *) 0, yelp_verb));
         if (svc.context.run)
             nomul(0);
@@ -545,7 +545,7 @@ whimper(struct monst *mtmp)
         }
     if (whimper_verb) {
         if (!Hallucination) {
-            Soundeffect(se, 50);
+            SoundeffectMon(se, 50, mtmp);
         }
         pline("%s %s.", Monnam(mtmp), vtense((char *) 0, whimper_verb));
         if (svc.context.run)
@@ -868,9 +868,9 @@ domonnoise(struct monst *mtmp)
             pline("%s throws back %s head and lets out a blood curdling %s!",
                   Monnam(mtmp), mhis(mtmp),
                   (ptr == &mons[PM_HUMAN_WERERAT]) ? "shriek" : "howl");
-            Soundeffect((ptr == &mons[PM_HUMAN_WERERAT]) ? se_scream
+            SoundeffectMon((ptr == &mons[PM_HUMAN_WERERAT]) ? se_scream
                                                          : se_canine_howl,
-                        80);
+                        80, mtmp);
             wake_nearto(mtmp->mx, mtmp->my, 11 * 11);
         } else {
             pline_msg =
@@ -879,28 +879,28 @@ domonnoise(struct monst *mtmp)
         break;
     case MS_BARK:
         if (flags.moonphase == FULL_MOON && night()) {
-            Soundeffect(se_canine_howl, 80);
+            SoundeffectMon(se_canine_howl, 80, mtmp);
             pline_msg = "howls.";
         } else if (mtmp->mpeaceful) {
             if (mtmp->mtame
                 && (mtmp->mconf || mtmp->mflee || mtmp->mtrapped
                     || svm.moves > EDOG(mtmp)->hungrytime || mtmp->mtame < 5)) {
-                Soundeffect(se_canine_whine, 60);
+                SoundeffectMon(se_canine_whine, 60, mtmp);
                 pline_msg = "whines.";
             } else if (mtmp->mtame
                        && EDOG(mtmp)->hungrytime > svm.moves + 1000) {
-                Soundeffect(se_canine_yip, 60);
+                SoundeffectMon(se_canine_yip, 60, mtmp);
                 pline_msg = "yips.";
             } else if (ptr != &mons[PM_DINGO]) {
-                Soundeffect(se_canine_bark, 80);
+                SoundeffectMon(se_canine_bark, 80, mtmp);
                 pline_msg = "barks.";
             } else {
                 /* dingos do not actually bark (VoxHack: they yowl) */
-                Soundeffect(se_canine_yowl, 70);
+                SoundeffectMon(se_canine_yowl, 70, mtmp);
                 pline_msg = "yowls.";
             }
         } else {
-            Soundeffect(se_canine_growl, 80);
+            SoundeffectMon(se_canine_growl, 80, mtmp);
             pline_msg = "growls.";
         }
         break;
@@ -908,16 +908,16 @@ domonnoise(struct monst *mtmp)
         if (mtmp->mtame) {
             if (mtmp->mconf || mtmp->mflee || mtmp->mtrapped
                 || mtmp->mtame < 5) {
-                Soundeffect(se_feline_yowl, 80);
+                SoundeffectMon(se_feline_yowl, 80, mtmp);
                 pline_msg = "yowls.";
             } else if (svm.moves > EDOG(mtmp)->hungrytime) {
-                Soundeffect(se_feline_meow, 80);
+                SoundeffectMon(se_feline_meow, 80, mtmp);
                 pline_msg = "meows.";
             } else if (EDOG(mtmp)->hungrytime > svm.moves + 1000) {
-                Soundeffect(se_feline_purr, 40);
+                SoundeffectMon(se_feline_purr, 40, mtmp);
                 pline_msg = "purrs.";
             } else {
-                Soundeffect(se_feline_mew, 60);
+                SoundeffectMon(se_feline_mew, 60, mtmp);
                 pline_msg = "mews.";
             }
             break;
@@ -925,92 +925,92 @@ domonnoise(struct monst *mtmp)
         FALLTHROUGH;
         /*FALLTHRU*/
     case MS_GROWL:
-        Soundeffect((mtmp->mpeaceful ? se_snarl : se_growl), 80);
+        SoundeffectMon((mtmp->mpeaceful ? se_snarl : se_growl), 80, mtmp);
         pline_msg = mtmp->mpeaceful ? "snarls." : "growls!";
         break;
     case MS_ROAR:
-        Soundeffect((mtmp->mpeaceful ? se_snarl : se_roar), 80);
+        SoundeffectMon((mtmp->mpeaceful ? se_snarl : se_roar), 80, mtmp);
         pline_msg = mtmp->mpeaceful ? "snarls." : "roars!";
         break;
     case MS_SQEEK:
-        Soundeffect(se_squeak, 80);
+        SoundeffectMon(se_squeak, 80, mtmp);
         pline_msg = "squeaks.";
         break;
     case MS_SQAWK:
         if (ptr == &mons[PM_RAVEN] && !mtmp->mpeaceful) {
             verbl_msg = "Nevermore!";
         } else {
-            Soundeffect(se_squawk, 80);
+            SoundeffectMon(se_squawk, 80, mtmp);
             pline_msg = "squawks.";
         }
         break;
     case MS_HISS:
         if (!mtmp->mpeaceful) {
-            Soundeffect(se_hiss, 80);
+            SoundeffectMon(se_hiss, 80, mtmp);
             pline_msg = "hisses!";
         } else {
             return ECMD_OK; /* no sound */
         }
         break;
     case MS_BUZZ:
-        Soundeffect((mtmp->mpeaceful ? se_buzz : se_angry_drone), 80);
+        SoundeffectMon((mtmp->mpeaceful ? se_buzz : se_angry_drone), 80, mtmp);
         pline_msg = mtmp->mpeaceful ? "drones." : "buzzes angrily.";
         break;
     case MS_GRUNT:
-        Soundeffect(se_grunt, 60);
+        SoundeffectMon(se_grunt, 60, mtmp);
         pline_msg = "grunts.";
         break;
     case MS_NEIGH:
         if (mtmp->mtame < 5) {
-            Soundeffect(se_equine_neigh, 60);
+            SoundeffectMon(se_equine_neigh, 60, mtmp);
             pline_msg = "neighs.";
         } else if (svm.moves > EDOG(mtmp)->hungrytime) {
-            Soundeffect(se_equine_whinny, 60);
+            SoundeffectMon(se_equine_whinny, 60, mtmp);
             pline_msg = "whinnies.";
         } else {
-            Soundeffect(se_equine_whicker, 60);
+            SoundeffectMon(se_equine_whicker, 60, mtmp);
             pline_msg = "whickers.";
         }
         break;
     case MS_MOO:
-        Soundeffect(se_bovine_moo, 80);
+        SoundeffectMon(se_bovine_moo, 80, mtmp);
         pline_msg = "moos.";
         break;
     case MS_BELLOW:
-        Soundeffect((ptr->mlet == S_QUADRUPED) ? se_bovine_bellow
+        SoundeffectMon((ptr->mlet == S_QUADRUPED) ? se_bovine_bellow
                                                : se_croc_bellow,
-                    80);
+                    80, mtmp);
         pline_msg = "bellows!";
         break;
     case MS_CHIRP:
-        Soundeffect(se_chirp, 60);
+        SoundeffectMon(se_chirp, 60, mtmp);
         pline_msg = "chirps.";
         break;
     case MS_WAIL:
-        Soundeffect(se_sad_wailing, 60);
+        SoundeffectMon(se_sad_wailing, 60, mtmp);
         pline_msg = "wails mournfully.";
         break;
     case MS_GROAN:
         if (!rn2(3)) {
-            Soundeffect(se_groan, 60);
+            SoundeffectMon(se_groan, 60, mtmp);
             pline_msg = "groans.";
         }
         break;
     case MS_GURGLE:
-        Soundeffect(se_gurgle, 60);
+        SoundeffectMon(se_gurgle, 60, mtmp);
         pline_msg = "gurgles.";
         break;
     case MS_BURBLE:
-        Soundeffect(se_jabberwock_burble, 60);
+        SoundeffectMon(se_jabberwock_burble, 60, mtmp);
         pline_msg = "burbles.";
         break;
     case MS_TRUMPET:
-        Soundeffect(se_elephant_trumpet, 60);
+        SoundeffectMon(se_elephant_trumpet, 60, mtmp);
         pline_msg = "trumpets!";
         wake_nearto(mtmp->mx, mtmp->my, 11 * 11);
         break;
     case MS_SHRIEK:
-        Soundeffect(se_shriek, 60);
+        SoundeffectMon(se_shriek, 60, mtmp);
         pline_msg = "shrieks.";
         aggravate();
         break;
@@ -1018,7 +1018,7 @@ domonnoise(struct monst *mtmp)
         pline_msg = "imitates you.";
         break;
     case MS_BONES:
-        Soundeffect(se_bone_rattle, 60);
+        SoundeffectMon(se_bone_rattle, 60, mtmp);
         pline("%s rattles noisily.", Monnam(mtmp));
         You("freeze for a moment.");
         nomul(-2);
@@ -1029,7 +1029,7 @@ domonnoise(struct monst *mtmp)
         static const char *const laugh_msg[4] = {
             "giggles.", "chuckles.", "snickers.", "laughs.",
         };
-        Soundeffect(se_laughter, 60);
+        SoundeffectMon(se_laughter, 60, mtmp);
         pline_msg = laugh_msg[rn2(4)];
         break;
     }
@@ -1037,7 +1037,7 @@ domonnoise(struct monst *mtmp)
         pline_msg = "mumbles incomprehensibly.";
         break;
     case MS_ORC: /* this used to be an alias for grunt, now it is distinct */
-        Soundeffect(se_orc_grunt, 60);
+        SoundeffectMon(se_orc_grunt, 60, mtmp);
         pline_msg = "grunts.";
         break;
     case MS_DJINNI:

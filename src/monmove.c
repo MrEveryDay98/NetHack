@@ -120,7 +120,7 @@ mon_yells(struct monst *mon, const char *shout)
         if (canspotmon(mon)) {
             pline_mon(mon, "%s yells:", Amonnam(mon));
         } else {
-            Soundeffect(se_someone_yells, 75);
+            SoundeffectMon(se_someone_yells, 75, mon);
             You_hear("someone yell:");
         }
         SetVoice(mon, 0, 80, 0);
@@ -1569,7 +1569,7 @@ postmov(
                     if (mb_trapped(mtmp, canseeit))
                         return MMOVE_DIED;
                 } else {
-                    Soundeffect(se_door_unlock_and_open, 50);
+                    SoundeffectMon(se_door_unlock_and_open, 50, mtmp);
                     if (flags.verbose) {
                         if (canseeit && canspotmon(mtmp)) {
                             pline_mon(mtmp, "%s unlocks and opens a door.",
@@ -1587,7 +1587,7 @@ postmov(
                     if (mb_trapped(mtmp, canseeit))
                         return MMOVE_DIED;
                 } else {
-                    Soundeffect(se_door_open, 100);
+                    SoundeffectMon(se_door_open, 100, mtmp);
                     if (flags.verbose) {
                         if (canseeit && canspotmon(mtmp)) {
                             pline_mon(mtmp, "%s opens a door.", Monnam(mtmp));
@@ -1611,7 +1611,7 @@ postmov(
                     if (mb_trapped(mtmp, canseeit))
                         return MMOVE_DIED;
                 } else {
-                    Soundeffect(se_door_crash_open, 50);
+                    SoundeffectMon(se_door_crash_open, 50, mtmp);
                     if (flags.verbose) {
                         if (canseeit && canspotmon(mtmp)) {
                             pline_mon(mtmp, "%s smashes down a door.",

@@ -28,7 +28,7 @@ staticfn int passiveum(struct permonst *, struct monst *, struct attack *);
 void
 hitmsg(struct monst *mtmp, struct attack *mattk)
 {
-    NHV_HOOK("monster_hits_you");
+    NHV_HOOK_MON("monster_hits_you", mtmp);
     int compat;
     const char *verb = 0, *again, *punct = "!";
     char *Monst_name = Monnam(mtmp);
@@ -85,7 +85,7 @@ hitmsg(struct monst *mtmp, struct attack *mattk)
 staticfn void
 missmu(struct monst *mtmp, boolean nearmiss, struct attack *mattk)
 {
-    NHV_HOOK("monster_misses_you");
+    NHV_HOOK_MON("monster_misses_you", mtmp);
     gh.hitmsg_mid = 0;
     gh.hitmsg_prev = NULL;
 
@@ -880,7 +880,7 @@ mattacku(struct monst *mtmp)
                                   Monnam(mtmp));
                     } else {
                         if (is_whirly(mtmp->data)) {
-                            Soundeffect(se_rushing_wind_noise, 60);
+                            SoundeffectMon(se_rushing_wind_noise, 60, mtmp);
                         }
                         You_hear("a %s nearby.",
                                  is_whirly(mtmp->data) ? "rushing noise"

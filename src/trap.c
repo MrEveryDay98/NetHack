@@ -1446,9 +1446,9 @@ trapeffect_sqky_board(
         if (in_sight) {
             if (!Deaf) {
                 if (IndexOk(trap->tnote, tsnds)) {
-                    Soundeffect(tsnds[trap->tnote], 50);
+                    SoundeffectMon(tsnds[trap->tnote], 50, mtmp);
                 }
-                Soundeffect(se_board_squeak, 60);
+                SoundeffectMon(se_board_squeak, 60, mtmp);
                 pline_mon(mtmp,
                       "A board beneath %s squeaks %s loudly.",
                       mon_nam(mtmp), trapnote(trap, FALSE));
@@ -1464,12 +1464,12 @@ trapeffect_sqky_board(
                 ? (BOLT_LIM + 1) : (BOLT_LIM - 3);
 
             if (IndexOk(trap->tnote, tsnds)) {
-                Soundeffect(tsnds[trap->tnote],
+                SoundeffectMon(tsnds[trap->tnote],
                              ((mdistu(mtmp) <= range * range)
-                                ? 40 : 20));
+                                ? 40 : 20), mtmp);
             }
-            Soundeffect(se_board_squeak,
-                        (mdistu(mtmp) <= range * range) ? 40 : 20);
+            SoundeffectMon(se_board_squeak,
+                        (mdistu(mtmp) <= range * range) ? 40 : 20, mtmp);
             You_hear("%s squeak %s.", trapnote(trap, FALSE),
                      (mdistu(mtmp) <= range * range)
                         ? "nearby" : "in the distance");
@@ -1543,7 +1543,7 @@ trapeffect_bear_trap(
             } else {
                 if (mptr == &mons[PM_OWLBEAR]
                     || mptr == &mons[PM_BUGBEAR]) {
-                    Soundeffect(se_roar, 100);
+                    SoundeffectMon(se_roar, 100, mtmp);
                     You_hear("the roaring of an angry bear!");
                 }
             }
@@ -2245,7 +2245,7 @@ trapeffect_web(
         case PM_OWLBEAR: /* Eric Backus */
         case PM_BUGBEAR:
             if (!in_sight) {
-                Soundeffect(se_roar, 60);
+                SoundeffectMon(se_roar, 60, mtmp);
                 You_hear("the roaring of a confused bear!");
                 mtmp->mtrapped = 1;
                 break;
@@ -3357,10 +3357,10 @@ launch_obj(
             if (cansee(x1, y1)) {
                 You_see("%s start to roll.", an(xname(singleobj)));
             } else if (Hallucination) {
-                Soundeffect(se_someone_bowling, 60);
+                SoundeffectAt(se_someone_bowling, 60, x1, y1);
                 You_hear("someone bowling.");
             } else {
-                Soundeffect(se_rumbling, 60);
+                SoundeffectAt(se_rumbling, 60, x1, y1);
                 You_hear("rumbling %s.", (distu(x1, y1) <= 4 * 4) ? "nearby"
                                            : "in the distance");
             }

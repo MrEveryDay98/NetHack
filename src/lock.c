@@ -867,7 +867,7 @@ doopen_indir(coordxy x, coordxy y)
             mesg = " is already open";
             break;
         default:
-            mesg = " is locked", NHV_HOOK("door_locked");
+            mesg = " is locked", NHV_HOOK_AT("door_locked", cc.x, cc.y);
             locked = TRUE;
             break;
         }
@@ -903,7 +903,7 @@ doopen_indir(coordxy x, coordxy y)
     /* door is known to be CLOSED */
     if (rnl(20) < (ACURRSTR + ACURR(A_DEX) + ACURR(A_CON)) / 3) {
         set_msg_xy(cc.x, cc.y);
-        NHV_HOOK("door_opens"), pline_The("door opens.");
+        NHV_HOOK_AT("door_opens", cc.x, cc.y), pline_The("door opens.");
         if (door->doormask & D_TRAPPED) {
             b_trapped("door", FINGER);
             door->doormask = D_NODOOR;
@@ -916,7 +916,7 @@ doopen_indir(coordxy x, coordxy y)
     } else {
         exercise(A_STR, TRUE);
         set_msg_xy(cc.x, cc.y);
-        NHV_HOOK("door_resists"), pline_The("door resists!");
+        NHV_HOOK_AT("door_resists", cc.x, cc.y), pline_The("door resists!");
     }
 
     return ECMD_TIME;
@@ -1037,13 +1037,13 @@ doclose(void)
         }
         if (u.usteed
             || rn2(25) < (ACURRSTR + ACURR(A_DEX) + ACURR(A_CON)) / 3) {
-            NHV_HOOK("door_close"), pline_The("door closes.");
+            NHV_HOOK_AT("door_close", x, y), pline_The("door closes.");
             door->doormask = D_CLOSED;
             feel_newsym(x, y); /* the hero knows she closed it */
             block_point(x, y); /* vision:  no longer see there */
         } else {
             exercise(A_STR, TRUE);
-            NHV_HOOK("door_resists"), pline_The("door resists!");
+            NHV_HOOK_AT("door_resists", x, y), pline_The("door resists!");
         }
     }
 
@@ -1142,7 +1142,7 @@ doorlock(struct obj *otmp, coordxy x, coordxy y)
                 pline("%s springs up in the older, more primitive doorway.",
                       dustcloud);
             } else {
-                Soundeffect(se_swoosh, 25);
+                SoundeffectAt(se_swoosh, 25, x, y);
                 You_hear("a swoosh.");
             }
             if (obstructed(x, y, mysterywand)) {
@@ -1218,11 +1218,11 @@ doorlock(struct obj *otmp, coordxy x, coordxy y)
                     /* for mtmp, mb_trapped() does is own wake_nearto() */
                     loudness = 40;
                     if (flags.verbose) {
-                        Soundeffect(se_kaboom_door_explodes, 75);
+                        SoundeffectAt(se_kaboom_door_explodes, 75, x, y);
                         if ((sawit || seeit) && !Unaware) {
                             pline("KABOOM!!  You see a door explode.");
                         } else if (!Deaf) {
-                            Soundeffect(se_explosion, 75);
+                            SoundeffectAt(se_explosion, 75, x, y);
                             You_hear("a %s explosion.",
                                      (distu(x, y) > 7 * 7) ? "distant"
                                                            : "nearby");
@@ -1240,7 +1240,7 @@ doorlock(struct obj *otmp, coordxy x, coordxy y)
                 if ((sawit || seeit) && !Unaware) {
                     pline_The("door crashes open!");
                 } else if (!Deaf) {
-                    Soundeffect(se_crashing_sound, 100);
+                    SoundeffectAt(se_crashing_sound, 100, x, y);
                     You_hear("a crashing sound.");
                 }
             }

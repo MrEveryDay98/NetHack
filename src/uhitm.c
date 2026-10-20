@@ -1764,7 +1764,7 @@ hmon_hitmon(
     int thrown, /* HMON_xxx (0 => hand-to-hand, other => ranged) */
     int dieroll)
 {
-    NHV_HOOK("hero_hits");
+    NHV_HOOK_MON("hero_hits", mon);
     struct _hitmon_data hmd;
     boolean maybe_knockback = FALSE;
 
@@ -3049,7 +3049,7 @@ mhitm_ad_curs(
             return;
         if (!magr->mcan && !rn2(10)) {
             if (!Deaf) {
-                Soundeffect(se_laughter, 40);
+                SoundeffectMon(se_laughter, 40, magr);
                 if (Blind) {
                     You_hear("laughter.");
                 } else {
@@ -5209,7 +5209,7 @@ missum(
     struct attack *mattk,
     boolean wouldhavehit)
 {
-    NHV_HOOK("hero_misses");
+    NHV_HOOK_MON("hero_misses", mdef);
     if (wouldhavehit) /* monk is missing due to penalty for wearing suit */
         Your("armor is rather cumbersome...");
 
@@ -6299,7 +6299,7 @@ RESTORE_WARNING_FORMAT_NONLITERAL
 void
 stumble_onto_mimic(struct monst *mtmp)
 {
-    NHV_HOOK("mimic_revealed");
+    NHV_HOOK_MON("mimic_revealed", mtmp);
     that_is_a_mimic(mtmp, MIM_REVEAL);
 
     if (!u.ustuck && !mtmp->mflee && dmgtype(mtmp->data, AD_STCK)

@@ -1652,7 +1652,7 @@ potionhit(struct monst *mon, struct obj *obj, int how)
             hit_saddle = TRUE;
         distance = distu(tx, ty);
         if (!cansee(tx, ty)) {
-            Soundeffect(se_potion_crash_and_break, 60);
+            SoundeffectAt(se_potion_crash_and_break, 60, tx, ty);
             pline("Crash!");
         } else {
             char *mnam = mon_nam(mon);
@@ -1669,7 +1669,7 @@ potionhit(struct monst *mon, struct obj *obj, int how)
             } else {
                 Strcpy(buf, mnam);
             }
-            Soundeffect(se_potion_crash_and_break, 60);
+            SoundeffectAt(se_potion_crash_and_break, 60, tx, ty);
             pline_The("%s crashes on %s and breaks into shards.", botlnam,
                       buf);
         }

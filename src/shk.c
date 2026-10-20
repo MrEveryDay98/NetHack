@@ -515,7 +515,7 @@ call_kops(struct monst *shkp, boolean nearshop)
     if (!shkp)
         return;
 
-    Soundeffect(se_alarm, 80);
+    SoundeffectMon(se_alarm, 80, shkp);
     if (!Deaf)
         pline("An alarm sounds!");
 
@@ -832,7 +832,7 @@ u_entered_shop(char *enterstring)
         }
     } else if (eshkp->robbed) {
         if (!Deaf) {
-            Soundeffect(se_mutter_imprecations, 50);
+            SoundeffectMon(se_mutter_imprecations, 50, shkp);
             pline("%s mutters imprecations against shoplifters.",
                   Shknam(shkp));
         } else {
@@ -4569,7 +4569,7 @@ shk_fixes_damage(struct monst *shkp)
         pline("%s whispers %s.", Shknam(shkp),
               shk_closeby ? "an incantation" : "something");
     } else if (!Deaf && shk_closeby) {
-        Soundeffect(se_mutter_incantation, 100);
+        SoundeffectMon(se_mutter_incantation, 100, shkp);
         You_hear("someone muttering an incantation.");
     }
 
