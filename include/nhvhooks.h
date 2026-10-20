@@ -43,6 +43,10 @@ extern int donhvpit(void);
 extern boolean nhv_walking;
 extern int donhvtrap(void);
 extern int donhvtick(void);
+/* a seeded game (rnd.c; set by the host before the game starts) */
+extern unsigned long nhv_fixed_seed;
+/* #nhvgoto dnum dlevel: go to that level (debug mode; the level atlas) */
+extern int donhvgoto(void);
 /* the hero is helpless this turn: wait for the host's clock (nhv_win.c) */
 extern void nhv_helpless_turn(void);
 extern int donhvattack(void);

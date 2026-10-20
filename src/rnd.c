@@ -278,9 +278,22 @@ extern unsigned long sys_random_seed(void);
  * Initializes the random number generator.
  * Only call once.
  */
+#ifdef NHV_FREEMOVE
+/* VoxHack: a seeded game (the host sets it before the game starts: the
+   level atlas); 0 = the usual random seed */
+unsigned long nhv_fixed_seed = 0;
+#endif
+
 void
 init_random(int (*fn)(int))
 {
+#ifdef NHV_FREEMOVE
+    if (nhv_fixed_seed) {
+        /* (the display RNG gets its own, so the two don't run in step) */
+        set_random(nhv_fixed_seed + (fn == rn2 ? 0UL : 7919UL), fn);
+        return;
+    }
+#endif
     set_random(sys_random_seed(), fn);
 }
 
@@ -290,6 +303,10 @@ reseed_random(int (*fn)(int))
 {
    /* only reseed if we are certain that the seed generation is unguessable
     * by the players. */
+#ifdef NHV_FREEMOVE
+    if (nhv_fixed_seed)
+        return; /* (a seeded game stays on its seed) */
+#endif
     if (has_strong_rngseed)
         init_random(fn);
 }

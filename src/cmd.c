@@ -1820,6 +1820,8 @@ struct ext_func_tab extcmdlist[] = {
               donhvmove, IFBURIED, NULL },
     { '\0',   "nhvtick", "(NetHack Voxel) let time pass",
               donhvtick, IFBURIED, NULL },
+    { '\0',   "nhvgoto", "(NetHack Voxel) go to a level (the level atlas)",
+              donhvgoto, IFBURIED | WIZMODECMD | NOFUZZERCMD, NULL },
 #endif
     { M('o'), "offer", "offer a sacrifice to the gods",
               dosacrifice, AUTOCOMPLETE | CMD_M_PREFIX, NULL },
