@@ -1341,6 +1341,16 @@ dochat(void)
         return ECMD_TIME;
     }
 
+#ifdef NHV_FREEMOVE
+    /* #nhvchat id: talk to that monster (the one the player points at),
+       wherever its square is now, instead of asking for a direction */
+    if (nhv_chat_mon) {
+        mtmp = nhv_chat_mon;
+        nhv_chat_mon = (struct monst *) 0;
+        tx = mtmp->mx, ty = mtmp->my;
+        goto nhv_chat;
+    }
+#endif
     if (!getdir("Talk to whom? (in what direction)")) {
         /* decided not to chat */
         return ECMD_CANCEL;
@@ -1423,6 +1433,10 @@ dochat(void)
         }
     }
 
+#ifdef NHV_FREEMOVE
+ nhv_chat:
+    nhUse(tx), nhUse(ty);
+#endif
     if (!mtmp || mtmp->mundetected
         || M_AP_TYPE(mtmp) == M_AP_FURNITURE
         || M_AP_TYPE(mtmp) == M_AP_OBJECT)

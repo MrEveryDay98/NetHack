@@ -57,6 +57,9 @@ extern void nhv_helpless_turn(void);
 extern boolean nhv_repeat_turn(void);
 extern boolean nhv_timed_occupation(void);
 extern int donhvattack(void);
+/* #nhvchat id: chat with that monster (sounds.c's dochat, aimed at it) */
+extern struct monst *nhv_chat_mon;
+extern int donhvchat(void);
 /* #nhvpole id: apply the wielded polearm / lance at that monster (apply.c's
    use_pole, aimed at nhv_pole_x, nhv_pole_y instead of asking) */
 extern int donhvpole(void);
