@@ -1984,6 +1984,40 @@ display_jump_positions(boolean on_off)
     }
 }
 
+#ifdef NHV_FREEMOVE
+/* VoxHack: where a physical jump (#jump) could land now, for the host to
+   show before the player picks one - jump()'s own checks, silently, and
+   nothing changed. Returns the number of squares (in xs[], ys[]), -1 if
+   the hero can jump but not right now (#jump says why: burdened,
+   levitating, held...), or -2 if the hero can't jump at all. */
+int
+nhv_jump_targets(coordxy *xs, coordxy *ys, int max)
+{
+    coordxy x, y, dx, dy;
+    int n = 0, save = gj.jumping_is_magic;
+
+    if (!Jumping || nolimbs(gy.youmonst.data) || slithy(gy.youmonst.data))
+        return -2;
+    if (u.uswallow || u.uinwater || u.ustuck || Levitation
+        || Is_airlevel(&u.uz) || Is_waterlevel(&u.uz)
+        || near_capacity() > UNENCUMBERED
+        || u.uhunger <= 100 || ACURR(A_STR) < 6 || Wounded_legs
+        || (u.usteed && (u.utrap || helpless(u.usteed))))
+        return -1;
+    gj.jumping_is_magic = 0;
+    for (dx = -3; dx <= 3; dx++)
+        for (dy = -3; dy <= 3; dy++) {
+            x = u.ux + dx, y = u.uy + dy;
+            if ((dx || dy) && get_valid_jump_position(x, y) && n < max) {
+                xs[n] = x, ys[n] = y;
+                n++;
+            }
+        }
+    gj.jumping_is_magic = save;
+    return n;
+}
+
+#endif
 int
 jump(int magic) /* 0=Physical, otherwise skill level */
 {
@@ -2055,13 +2089,22 @@ jump(int magic) /* 0=Physical, otherwise skill level */
         return ECMD_OK;
     }
 
-    pline("Where do you want to jump?");
     cc.x = u.ux;
     cc.y = u.uy;
     gj.jumping_is_magic = magic;
+#ifdef NHV_FREEMOVE
+    /* #nhvjump x y: the square the player picked in 3D (crosshair) */
+    if (nhv_jump_x >= 0) {
+        cc.x = nhv_jump_x, cc.y = nhv_jump_y;
+        nhv_jump_x = nhv_jump_y = -1;
+    } else
+#endif
+    {
+    pline("Where do you want to jump?");
     getpos_sethilite(display_jump_positions, get_valid_jump_position);
     if (getpos(&cc, TRUE, "the desired position") < 0)
         return ECMD_CANCEL; /* user pressed ESC */
+    }
     if (!is_valid_jump_pos(cc.x, cc.y, magic, TRUE)) {
         return ECMD_FAIL;
     } else if (u.usteed && u_at(cc.x, cc.y)) {

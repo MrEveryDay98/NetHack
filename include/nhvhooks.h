@@ -57,6 +57,11 @@ extern void nhv_helpless_turn(void);
 extern boolean nhv_repeat_turn(void);
 extern boolean nhv_timed_occupation(void);
 extern int donhvattack(void);
+/* #nhvjump x y: jump there (apply.c's jump, at that square instead of
+   asking); nhv_jump_targets: where a jump could land now */
+extern coordxy nhv_jump_x, nhv_jump_y;
+extern int donhvjump(void);
+extern int nhv_jump_targets(coordxy *, coordxy *, int);
 /* #nhvchat id: chat with that monster (sounds.c's dochat, aimed at it) */
 extern struct monst *nhv_chat_mon;
 extern int donhvchat(void);
