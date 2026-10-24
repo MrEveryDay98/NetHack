@@ -1744,6 +1744,17 @@ invoke_ok(struct obj *obj)
     return GETOBJ_EXCLUDE;
 }
 
+#ifdef NHV_FREEMOVE
+/* NetHack Voxel: an item #invoke does something with - an artifact with an
+   invoke power, or a crystal ball (Q invokes the wielded one) */
+boolean
+nhv_invokable(struct obj *obj)
+{
+    return (obj->oartifact && get_artifact(obj)->inv_prop)
+           || obj->otyp == CRYSTAL_BALL;
+}
+#endif
+
 /* the #invoke command */
 int
 doinvoke(void)

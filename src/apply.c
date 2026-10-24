@@ -3430,6 +3430,18 @@ calc_pole_range(int *min_range, int *max_range)
 
 }
 
+#ifdef NHV_FREEMOVE
+/* NetHack Voxel: how far the wielded polearm reaches (squared distance) */
+int
+nhv_pole_range(void)
+{
+    int min_range, max_range;
+
+    calc_pole_range(&min_range, &max_range);
+    return max_range;
+}
+#endif
+
 /* return TRUE if hero is wielding a polearm and there's
    at least one monster they could hit with it */
 boolean
@@ -3504,6 +3516,7 @@ use_pole(struct obj *obj, boolean autohit)
         /* NetHack Voxel: the monster the player aimed at */
         cc.x = nhv_pole_x, cc.y = nhv_pole_y;
         nhv_pole_x = nhv_pole_y = 0;
+        nhv_pole_host = TRUE;
     } else
 #endif
     if (!find_poleable_mon(&cc) && hitm
@@ -3521,6 +3534,18 @@ use_pole(struct obj *obj, boolean autohit)
     }
 
     glyph = glyph_at(cc.x, cc.y);
+#ifdef NHV_FREEMOVE
+    /* NetHack Voxel: the host aimed it, at a monster it found within the
+       polearm's reach of the hero's body (its reach grows with skill as
+       max_range does) - not "too far" or "too close" by squares */
+    if (nhv_pole_host) {
+        nhv_pole_host = FALSE;
+        if (!cansee(cc.x, cc.y) && !glyph_is_poleable(glyph)) {
+            You(cant_see_spot);
+            return ECMD_FAIL;
+        }
+    } else
+#endif
     if (distu(cc.x, cc.y) > max_range) {
         pline("Too far!");
         return ECMD_FAIL;
@@ -3570,6 +3595,11 @@ use_pole(struct obj *obj, boolean autohit)
             }
         }
 
+#ifdef NHV_FREEMOVE
+        /* (the hand stabs; 1: Snickersnee's free hit, which sounds
+           different) */
+        nhv_combat_event("upole", freehit ? 1 : 0, mtmp->m_id, 0);
+#endif
         (void) thitmonst(mtmp, uwep);
     } else if (glyph_is_statue(glyph) /* might be hallucinatory */
                && sobj_at(STATUE, gb.bhitpos.x, gb.bhitpos.y)) {

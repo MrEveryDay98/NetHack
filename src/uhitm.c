@@ -574,10 +574,20 @@ do_attack(struct monst *mtmp)
      * and it returned 0 (it's okay to attack), and the monster didn't
      * evade.
      */
+#ifdef NHV_FREEMOVE
+    /* NetHack Voxel: on the monster's own square - in free movement the
+       one within reach isn't always a step away in the attack's direction
+       (it can even share the hero's square) */
+    if (svc.context.forcefight && !DEADMONSTER(mtmp) && !canspotmon(mtmp)
+        && !glyph_is_invisible(levl[mtmp->mx][mtmp->my].glyph)
+        && !engulfing_u(mtmp))
+        map_invisible(mtmp->mx, mtmp->my);
+#else
     if (svc.context.forcefight && !DEADMONSTER(mtmp) && !canspotmon(mtmp)
         && !glyph_is_invisible(levl[u.ux + u.dx][u.uy + u.dy].glyph)
         && !engulfing_u(mtmp))
         map_invisible(u.ux + u.dx, u.uy + u.dy);
+#endif
 
     return TRUE;
 }

@@ -28,6 +28,8 @@ extern boolean nhv_mon_keeps_distance(struct monst *);
 /* combat feedback for the host: kind "attack", attacker, target (0 =
    hero), melee (attacker can reach the target) */
 extern void nhv_combat_event(const char *, unsigned, unsigned, int);
+extern boolean nhv_invokable(struct obj *);
+extern int nhv_pole_range(void);
 /* quest message about to be shown (nhv_sound.c) */
 extern void nhv_quest_event(const char *, const char *);
 /* extended commands used by the host */
@@ -69,6 +71,7 @@ extern int donhvchat(void);
    use_pole, aimed at nhv_pole_x, nhv_pole_y instead of asking) */
 extern int donhvpole(void);
 extern coordxy nhv_pole_x, nhv_pole_y;
+extern boolean nhv_pole_host; /* (set by use_pole while it takes the host's aim) */
 extern int donhvmhit(void);
 extern int donhvmhitm(void);
 extern int donhvmland(void);

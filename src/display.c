@@ -382,6 +382,13 @@ map_invisible(coordxy x, coordxy y)
             levl[x][y].glyph = GLYPH_INVISIBLE;
         show_glyph(x, y, GLYPH_INVISIBLE);
     }
+#ifdef NHV_FREEMOVE
+    /* NetHack Voxel: in free movement an unseen monster can share the
+       hero's square; remember it there (the host shows the marker), so
+       it's still there when the hero steps off */
+    else if (svl.level.flags.hero_memory)
+        levl[x][y].glyph = GLYPH_INVISIBLE;
+#endif
 }
 
 boolean
