@@ -355,6 +355,9 @@ chat_with_leader(struct monst *mtmp)
             qt_pager("assignquest");
             exercise(A_WIS, TRUE);
             Qstat(got_quest) = TRUE;
+#ifdef NHV_FREEMOVE
+            nhv_achieve("quest_accepted");
+#endif
 
             /* phrasing is a bit clumsy but allows #chronicle to provide a
                clue to players who are reaching the quest for first time;

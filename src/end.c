@@ -1184,6 +1184,9 @@ really_done(int how)
         if (u.uroleplay.nudist)
             record_achievement(ACH_NUDE); /* never wore armor */
     }
+#ifdef NHV_FREEMOVE
+    nhv_achieve_end(how);
+#endif
     if (how == ASCENDED)
         record_achievement(ACH_UWIN);
 

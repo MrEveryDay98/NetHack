@@ -791,6 +791,9 @@ maybe_cannibal(int pm, boolean allowmsg)
 staticfn void
 cprefx(int pm)
 {
+#ifdef NHV_FREEMOVE
+    nhv_achieve("eat %s", mons[pm].pmnames[NEUTRAL]);
+#endif
     (void) maybe_cannibal(pm, TRUE);
     if (flesh_petrifies(&mons[pm])) {
         if (!Stone_resistance

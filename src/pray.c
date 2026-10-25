@@ -812,6 +812,9 @@ gcrownu(void)
     short class_gift;
 #define ok_wep(o) ((o) && ((o)->oclass == WEAPON_CLASS || is_weptool(o)))
 
+#ifdef NHV_FREEMOVE
+    nhv_achieve("crowned");
+#endif
     HSee_invisible |= FROMOUTSIDE;
     HFire_resistance |= FROMOUTSIDE;
     HCold_resistance |= FROMOUTSIDE;
@@ -1675,6 +1678,9 @@ offer_different_alignment_altar(
             if (shrine)
                 levl[u.ux][u.uy].altarmask |= AM_SHRINE;
             NHV_HOOK("altar_converted");
+#ifdef NHV_FREEMOVE
+            nhv_achieve("altar_converted");
+#endif
             newsym(u.ux, u.uy); /* in case Invisible to self */
             if (!Blind)
                 pline_The("altar glows %s.",

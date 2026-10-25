@@ -30,6 +30,13 @@ extern boolean nhv_mon_keeps_distance(struct monst *);
 extern void nhv_combat_event(const char *, unsigned, unsigned, int);
 extern boolean nhv_invokable(struct obj *);
 extern int nhv_pole_range(void);
+/* achievements (nhv_achieve.c): an event for the host, as printf */
+extern void nhv_achieve(const char *, ...) PRINTF_F(1, 2);
+extern void nhv_achieve_kill(struct monst *);
+extern void nhv_achieve_poly(int);
+extern void nhv_achieve_end(int);
+extern int nhv_hmon_kind;          /* (uhitm.c's hmon: its HMON_*) */
+extern boolean nhv_boulder_kill;   /* (read.c: your boulder kills) */
 /* quest message about to be shown (nhv_sound.c) */
 extern void nhv_quest_event(const char *, const char *);
 /* extended commands used by the host */

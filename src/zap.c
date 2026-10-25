@@ -6360,6 +6360,10 @@ makewish(void)
     int tries = 0;
     long oldwisharti = u.uconduct.wisharti;
 
+#ifdef NHV_FREEMOVE
+    if (!svc.context.resume_wish)
+        nhv_achieve("wish");
+#endif
     svc.context.resume_wish = 0;
     promptbuf[0] = '\0';
     nothing = cg.zeroobj; /* lint suppression; only its address matters */

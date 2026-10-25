@@ -1201,6 +1201,10 @@ skill_advance(int skill)
     u.weapon_slots -= slots_required(skill);
     P_SKILL(skill)++;
     u.skill_record[u.skills_advanced++] = skill;
+#ifdef NHV_FREEMOVE
+    if (P_SKILL(skill) >= P_EXPERT)
+        nhv_achieve("expert");
+#endif
     /* subtly change the advance message to indicate no more advancement */
     You("are now %s skilled in %s.",
         P_SKILL(skill) >= P_MAX_SKILL(skill) ? "most" : "more",

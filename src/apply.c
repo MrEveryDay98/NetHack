@@ -3589,6 +3589,10 @@ use_pole(struct obj *obj, boolean autohit)
         if (obj == uwep && u_wield_art(ART_SNICKERSNEE)) {
             freehit = (svm.moves != svc.context.snickersnee_turn);
             svc.context.snickersnee_turn = svm.moves;
+#ifdef NHV_FREEMOVE
+            if (freehit)
+                nhv_achieve("snickersnee");
+#endif
             if (freehit && !Deaf) {
                 Soundeffect(se_sword_blade_rings, 100);
                 pline("Shkinng!"); /* /sha-kin!/ */
@@ -3668,6 +3672,10 @@ use_cream_pie(struct obj *obj)
 
         u.ucreamed += blindinc;
         make_blinded(BlindedTimeout + (long) blindinc, FALSE);
+#ifdef NHV_FREEMOVE
+        if (Blind)
+            nhv_achieve("creamed");
+#endif
         if (!Blind || (Blind && wasblind))
             pline("There's %ssticky goop all over your %s.",
                   wascreamed ? "more " : "", body_part(FACE));

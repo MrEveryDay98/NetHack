@@ -818,6 +818,9 @@ sink_backs_up(coordxy x, coordxy y)
     if (!(levl[x][y].looted & S_LRING)) { /* once per sink */
         if (!Blind)
             You_see("a ring shining in its midst.");
+#ifdef NHV_FREEMOVE
+        nhv_achieve("sink_ring");
+#endif
         (void) mkobj_at(RING_CLASS, x, y, TRUE);
         newsym(x, y);
         exercise(A_DEX, TRUE);

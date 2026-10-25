@@ -986,11 +986,18 @@ addinv_core1(struct obj *obj)
             if (u.uhave.questart)
                 impossible("already have quest artifact?");
             u.uhave.questart = 1;
+#ifdef NHV_FREEMOVE
+            nhv_achieve("quest_artifact");
+#endif
             artitouch(obj);
         }
         set_artifact_intrinsic(obj, 1, W_ART);
     }
 
+#ifdef NHV_FREEMOVE
+    if (obj->otyp == WAN_WISHING && Is_stronghold(&u.uz))
+        nhv_achieve("castle_wand");
+#endif
     /* "special achievements"; revealed in end of game disclosure and
        dumplog, originally just recorded in XLOGFILE */
     if (is_mines_prize(obj)) {

@@ -2395,7 +2395,13 @@ drop_boulder_on_monster(coordxy x, coordxy y, boolean confused, boolean byu)
         mtmp->mhp -= mdmg;
         if (DEADMONSTER(mtmp)) {
             if (byu) {
+#ifdef NHV_FREEMOVE
+                nhv_boulder_kill = TRUE;
                 killed(mtmp);
+                nhv_boulder_kill = FALSE;
+#else
+                killed(mtmp);
+#endif
             } else {
                 pline("%s is killed.", Monnam(mtmp));
                 mondied(mtmp);

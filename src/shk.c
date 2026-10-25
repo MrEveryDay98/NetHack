@@ -5317,6 +5317,9 @@ pay_for_damage(const char *dmgstr, boolean cant_mollify)
             disp.botl = TRUE;
         }
         pline("Mollified, %s accepts your restitution.", shkname(shkp));
+#ifdef NHV_FREEMOVE
+        nhv_achieve("shk_paid");
+#endif
         /* move shk back to his home loc */
         home_shk(shkp, FALSE);
         pacify_shk(shkp, FALSE);

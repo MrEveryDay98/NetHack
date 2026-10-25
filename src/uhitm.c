@@ -842,7 +842,17 @@ hmon(struct monst *mon,
 
     anger_guards = (mon->mpeaceful
                     && (mon->ispriest || mon->isshk || is_watch(mon->data)));
+#ifdef NHV_FREEMOVE
+    {
+        int was = nhv_hmon_kind;
+
+        nhv_hmon_kind = thrown;
+        result = hmon_hitmon(mon, obj, thrown, dieroll);
+        nhv_hmon_kind = was;
+    }
+#else
     result = hmon_hitmon(mon, obj, thrown, dieroll);
+#endif
     if (mon->ispriest && !rn2(2))
         ghod_hitsu(mon);
     if (anger_guards)

@@ -408,6 +408,11 @@ oname(
         /* if obj is owned by a shop, increase your bill */
         if (obj->unpaid)
             alter_cost(obj, 0L);
+#ifdef NHV_FREEMOVE
+        if (oflgs & (ONAME_VIA_NAMING | ONAME_VIA_DIP | ONAME_GIFT
+                     | ONAME_WISH))
+            nhv_achieve("artifact %u", oflgs);
+#endif
         if (via_naming) {
             /* violate illiteracy conduct since successfully wrote arti-name */
             if (!u.uconduct.literate++)

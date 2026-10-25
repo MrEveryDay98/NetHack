@@ -104,6 +104,11 @@ setuwep(struct obj *obj)
     if (obj == uwep)
         return; /* necessary to not set gu.unweapon */
     setworn(obj, W_WEP);
+#ifdef NHV_FREEMOVE
+    if (uwep && uwep->otyp == CORPSE && ismnum(uwep->corpsenm)
+        && touch_petrifies(&mons[uwep->corpsenm]) && uarmg)
+        nhv_achieve("wield_trice");
+#endif
     /* handle Ogresmasher before Sunsword; even though they can't be happening
        at the same time, botl flag update should come before pline message */
     if (uwep == obj

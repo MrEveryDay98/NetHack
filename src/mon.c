@@ -3503,6 +3503,9 @@ xkilled(
     iflags.sad_feeling = FALSE;
 
     mtmp->mhp = 0; /* caller will usually have already done this */
+#ifdef NHV_FREEMOVE
+    nhv_achieve_kill(mtmp);
+#endif
     if (!noconduct) { /* KMH, conduct */
         if (!u.uconduct.killer++)
             livelog_printf(LL_CONDUCT, "killed for the first time");
