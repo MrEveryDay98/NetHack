@@ -517,6 +517,14 @@ do_attack(struct monst *mtmp)
        it uses gb.bhitpos instead; it might map an invisible monster there */
     gb.bhitpos.x = u.ux + u.dx;
     gb.bhitpos.y = u.uy + u.dy;
+#ifdef NHV_FREEMOVE
+    /* NetHack Voxel: the monster within reach isn't always a step away in
+       the attack's direction (it can even share the hero's square); aim
+       at its own square, or a polymorphed hero's attacks after the first
+       (hmonas) would all be skipped as "no longer in range" */
+    if (nhv_freemove && m_at(gb.bhitpos.x, gb.bhitpos.y) != mtmp)
+        gb.bhitpos.x = mtmp->mx, gb.bhitpos.y = mtmp->my;
+#endif
     gn.notonhead = (gb.bhitpos.x != mtmp->mx || gb.bhitpos.y != mtmp->my);
     if (attack_checks(mtmp, uwep))
         return TRUE;
@@ -556,8 +564,14 @@ do_attack(struct monst *mtmp)
     if (mdat->mlet == S_LEPRECHAUN && !mtmp->mfrozen && !helpless(mtmp)
         && !mtmp->mconf && mtmp->mcansee && !rn2(7)
         && (m_move(mtmp, 0) == MMOVE_DIED /* it died */
+#ifdef NHV_FREEMOVE
+            /* (NetHack Voxel: from where the attack was aimed) */
+            || mtmp->mx != gb.bhitpos.x
+            || mtmp->my != gb.bhitpos.y)) { /* it moved */
+#else
             || mtmp->mx != u.ux + u.dx
             || mtmp->my != u.uy + u.dy)) { /* it moved */
+#endif
         You("miss wildly and stumble forwards.");
         return FALSE;
     }
@@ -772,6 +786,11 @@ hitum(struct monst *mon, struct attack *uattk)
         *secondwep = u.twoweap ? uswapwep : (struct obj *) 0;
     int tmp, dieroll, mhit, armorpenalty, attknum = 0,
         x = u.ux + u.dx, y = u.uy + u.dy, oldumort = u.umortality;
+
+#ifdef NHV_FREEMOVE
+    /* (NetHack Voxel: where the attack was aimed; see do_attack) */
+    x = gb.bhitpos.x, y = gb.bhitpos.y;
+#endif
 
     /* Cleaver attacks three spots, 'mon' and one on either side of 'mon';
        it can't be part of dual-wielding but we guard against that anyway;
@@ -5570,7 +5589,12 @@ hmonas(struct monst *mon)
             } else
                 sum[i] = dhit ? M_ATTK_HIT : M_ATTK_MISS;
             /* might be a worm that gets cut in half; if so, early return */
+#ifdef NHV_FREEMOVE
+            /* (NetHack Voxel: where the attack was aimed; see do_attack) */
+            if (m_at(gb.bhitpos.x, gb.bhitpos.y) != mon) {
+#else
             if (m_at(u.ux + u.dx, u.uy + u.dy) != mon) {
+#endif
                 i = NATTK; /* skip additional attacks */
                 /* proceed with uswapwep->cursed check, then exit loop */
                 goto passivedone;

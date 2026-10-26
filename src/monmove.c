@@ -1847,6 +1847,12 @@ m_move(struct monst *mtmp, int after)
             /*FALLTHRU*/
         case 0:
         case 1:
+            /* VoxHack: a guard that has just vanished (parked at <0,0> by
+               gd_move_cleanup) has nothing left to do here; postmov would
+               try to show it at <0,0> ("newsym: attempting screen update
+               for <0,0>"). dochug() then treats it as gone. */
+            if (mtmp->isgd && !mtmp->mx)
+                return MMOVE_DONE;
             return postmov(mtmp, ptr, omx, omy,
                            (xm != 1) ? MMOVE_NOTHING : MMOVE_MOVED,
                            seenflgs, can_tunnel, can_unlock, can_open);
