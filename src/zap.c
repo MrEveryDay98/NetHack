@@ -2729,6 +2729,7 @@ zapyourself(struct obj *obj, boolean ordinary)
 
     case WAN_LIGHTNING:
         learn_it = TRUE;
+        NHV_HOOK("lightning_flash");
         orig_dmg = d(12, 6);
         if (!Shock_resistance) {
             You("shock yourself!");
@@ -3471,10 +3472,14 @@ weffects(struct obj *obj)
         }
         else if (otyp >= SPE_MAGIC_MISSILE && otyp <= SPE_FINGER_OF_DEATH)
             ubuzz(BZ_U_SPELL(BZ_OFS_SPE(otyp)), u.ulevel / 2 + 1);
-        else if (otyp >= WAN_MAGIC_MISSILE && otyp <= WAN_LIGHTNING)
+        else if (otyp >= WAN_MAGIC_MISSILE && otyp <= WAN_LIGHTNING) {
+            /* (VoxHack: a lightning ray flies in the 3D world, which
+               flashes for it; one zapped up or down stays NetHack's) */
+            if (otyp == WAN_LIGHTNING && u.dz)
+                NHV_HOOK("lightning_flash");
             ubuzz(BZ_U_WAND(BZ_OFS_WAN(otyp)),
                   (otyp == WAN_MAGIC_MISSILE) ? 2 : 6);
-        else
+        } else
             impossible("weffects: unexpected spell or wand");
         disclose = TRUE;
     }

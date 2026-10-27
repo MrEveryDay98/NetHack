@@ -992,6 +992,9 @@ addinv_core1(struct obj *obj)
             artitouch(obj);
         }
         set_artifact_intrinsic(obj, 1, W_ART);
+#ifdef NHV_FREEMOVE
+        nhv_artifact_obtained(obj);
+#endif
     }
 
 #ifdef NHV_FREEMOVE

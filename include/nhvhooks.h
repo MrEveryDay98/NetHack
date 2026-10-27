@@ -35,6 +35,7 @@ extern void nhv_achieve(const char *, ...) PRINTF_F(1, 2);
 extern void nhv_achieve_kill(struct monst *);
 extern void nhv_achieve_poly(int);
 extern void nhv_achieve_end(int);
+extern void nhv_artifact_obtained(struct obj *);
 extern int nhv_hmon_kind;          /* (uhitm.c's hmon: its HMON_*) */
 extern boolean nhv_boulder_kill;   /* (read.c: your boulder kills) */
 /* quest message about to be shown (nhv_sound.c) */

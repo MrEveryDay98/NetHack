@@ -1243,6 +1243,8 @@ doengrave(void)
     svc.context.engraving.actionct = 0;
     set_occupation(engrave, "engraving", 0);
 
+    if (de->doblind)
+        NHV_HOOK("lightning_flash"); /* (lightning arcs from the wand) */
     if (de->post_engr_text[0])
         pline("%s", de->post_engr_text);
     if (de->doblind && !resists_blnd(&gy.youmonst)) {

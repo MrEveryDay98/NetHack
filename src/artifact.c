@@ -395,6 +395,12 @@ artifact_exists(
                        there's no ONAME_ flag) and flgs might also contain
                        the know_arti bit (hero knows that artifact exists) */
                     artifact_origin(otmp, flgs);
+#ifdef NHV_FREEMOVE
+                    /* (VoxHack: one you carry became an artifact - dipped
+                       for Excalibur, named Sting...: you've got it) */
+                    if (otmp->where == OBJ_INVENT)
+                        nhv_artifact_obtained(otmp);
+#endif
                 } else { /* uncreate */
                     /* clear all the flag bits */
                     artiexist[m] = zero_artiexist;
@@ -1435,6 +1441,26 @@ Mb_hit(struct monst *magr, /* attacker */
 
 DISABLE_WARNING_FORMAT_NONLITERAL
 
+#ifdef NHV_FREEMOVE
+/* VoxHack: an artifact's elemental hit landing (its damage bonus applies):
+   a hook for its sound and effect, where whoever it hit is */
+static const char *const nhv_artifact_hook[] = {
+    "artifact_fire", "artifact_cold", "artifact_lightning", "artifact_missiles"
+};
+
+staticfn void
+nhv_artifact_hit(int which, struct monst *mdef)
+{
+    if (mdef == &gy.youmonst)
+        NHV_HOOK_AT(nhv_artifact_hook[which], u.ux, u.uy);
+    else
+        NHV_HOOK_MON(nhv_artifact_hook[which], mdef);
+}
+#define NHV_ARTIFACT_HIT(which, mdef)                    do {                                                     if (realizes_damage && gs.spec_dbon_applies)             nhv_artifact_hit((which), (mdef));           } while (0)
+#else
+#define NHV_ARTIFACT_HIT(which, mdef) ((void) 0)
+#endif
+
 /* Function used when someone attacks someone else with an artifact
  * weapon.  Only adds the special (artifact) damage, and returns a 1 if it
  * did something special (in which case the caller won't print the normal
@@ -1488,6 +1514,7 @@ artifact_hit(
                                 ? "vaporizes part of"
                                 : "burns",
                       hittee, !gs.spec_dbon_applies ? '.' : '!');
+        NHV_ARTIFACT_HIT(0, mdef);
         if (!rn2(4)) {
             int itemdmg = destroy_items(mdef, AD_FIRE, *dmgptr);
             if (!youdefend)
@@ -1503,6 +1530,7 @@ artifact_hit(
             pline_The("ice-cold blade %s %s%c",
                       !gs.spec_dbon_applies ? "hits" : "freezes", hittee,
                       !gs.spec_dbon_applies ? '.' : '!');
+        NHV_ARTIFACT_HIT(1, mdef);
         if (!rn2(4)) {
             int itemdmg = destroy_items(mdef, AD_COLD, *dmgptr);
             if (!youdefend)
@@ -1515,6 +1543,7 @@ artifact_hit(
             pline_The("massive hammer hits%s %s%c",
                       !gs.spec_dbon_applies ? "" : "!  Lightning strikes",
                       hittee, !gs.spec_dbon_applies ? '.' : '!');
+        NHV_ARTIFACT_HIT(2, mdef);
         if (gs.spec_dbon_applies)
             wake_nearto(mdef->mx, mdef->my, 4 * 4);
         if (!rn2(5)) {
@@ -1531,6 +1560,7 @@ artifact_hit(
                           ? ""
                           : "!  A hail of magic missiles strikes",
                       hittee, !gs.spec_dbon_applies ? '.' : '!');
+        NHV_ARTIFACT_HIT(3, mdef);
         return realizes_damage;
     }
 

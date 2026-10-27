@@ -90,6 +90,7 @@ use_camera(struct obj *obj)
         return ECMD_TIME;
     }
     consume_obj_charge(obj, TRUE);
+    NHV_HOOK("camera_flash"); /* (VoxHack: the flash goes off) */
 
     if (obj->cursed && !rn2(2)) {
         (void) zapyourself(obj, TRUE);
@@ -4084,6 +4085,8 @@ do_break_wand(struct obj *obj)
         return ECMD_TIME;
     case WAN_DEATH:
     case WAN_LIGHTNING:
+        if (obj->otyp == WAN_LIGHTNING)
+            NHV_HOOK("lightning_flash");
         broken_wand_explode(obj, dmg * 4, EXPL_MAGICAL);
         return ECMD_TIME;
     case WAN_FIRE:
