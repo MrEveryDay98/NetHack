@@ -2363,6 +2363,12 @@ staticfn boolean
 air_turbulence(void)
 {
     if (Is_airlevel(&u.uz) && rn2(4) && !Levitation && !Flying) {
+#ifdef NHV_FREEMOVE
+        /* (VoxHack: a step walked - the body walks a quarter as fast,
+           the time the failed tries take passing as it does - goes
+           through; what failing would say and exercise still happens) */
+        boolean walked = nhv_walking;
+#endif
         switch (rn2(3)) {
         case 0:
             You("tumble in place.");
@@ -2376,6 +2382,10 @@ air_turbulence(void)
             exercise(A_DEX, TRUE);
             break;
         }
+#ifdef NHV_FREEMOVE
+        if (walked)
+            return FALSE;
+#endif
         return TRUE;
     }
     return FALSE;
