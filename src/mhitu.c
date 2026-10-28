@@ -1332,6 +1332,22 @@ gulpmu(struct monst *mtmp, struct attack *mattk)
             unplacebc(); /* ball&chain go away */
         remove_monster(omx, omy);
         mtmp->mtrapped = 0; /* no longer on old trap */
+#ifdef NHV_FREEMOVE
+        /* (VoxHack: the hero can share a square with a monster - it steps
+           aside for the engulfer, rather than being placed over) */
+        {
+            struct monst *mshare = m_at(u.ux, u.uy);
+
+            if (mshare && mshare != mtmp)
+                mnexto(mshare, RLOC_NOMSG);
+            if (m_at(u.ux, u.uy)) { /* (nowhere for it to go: no gulp) */
+                place_monster(mtmp, omx, omy);
+                if (Punished)
+                    placebc();
+                return M_ATTK_MISS;
+            }
+        }
+#endif
         place_monster(mtmp, u.ux, u.uy);
         set_ustuck(mtmp);
         newsym(mtmp->mx, mtmp->my);
