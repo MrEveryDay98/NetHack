@@ -1868,6 +1868,21 @@ do_storms(void)
             dirx = rn2(3) - 1;
             diry = rn2(3) - 1;
             if (dirx != 0 || diry != 0) {
+#ifdef NHV_FREEMOVE
+                /* (VoxHack: the strike - out of the sky onto the cloud -
+                   and how far its bolt runs: a hook where it strikes and
+                   another where the bolt ends, about the ray's reach on) */
+                {
+                    coordxy ex = x, ey = y;
+                    int k;
+
+                    for (k = 0; k < 10 && isok(ex + dirx, ey + diry)
+                                && ZAP_POS(levl[ex + dirx][ey + diry].typ); k++)
+                        ex += dirx, ey += diry;
+                    NHV_HOOK_AT("storm_lightning", x, y);
+                    NHV_HOOK_AT("storm_lightning_end", ex, ey);
+                }
+#endif
                 /* BZ_M_SPELL(BZ_OFS_AD(AD_ELEC)): monster LIGHTNING spell */
                 gb.buzzer = 0; /* unspecified attacker */
                 buzz(BZ_M_SPELL(BZ_OFS_AD(AD_ELEC)), 8, x, y, dirx, diry);
