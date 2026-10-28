@@ -1655,15 +1655,16 @@ rloc_to_core(
     boolean appearmsg = (mtmp->mstrategy & STRAT_APPEARMSG) != 0;
     boolean domsg = !gi.in_mklev && (vanishmsg || appearmsg) && !preventmsg;
     boolean telemsg = FALSE;
-    /* (VoxHack: a monster seen teleporting - the effect where it was and
-       where it goes; not one being placed as a level is made or arriving
-       from another) */
+    /* (VoxHack: a monster you perceive teleporting - seen, or sensed:
+       the host draws it either way - the effect where it was and where it
+       goes; not one being placed as a level is made or arriving from
+       another) */
     boolean nhv_seen_from = FALSE;
 
     if (x == mtmp->mx && y == mtmp->my && m_at(x, y) == mtmp)
         return; /* that was easy */
 
-    if (oldx && !gi.in_mklev && canspotmon(mtmp) && cansee(oldx, oldy))
+    if (oldx && !gi.in_mklev && canspotmon(mtmp))
         nhv_seen_from = TRUE;
 
     if (oldx) { /* "pick up" monster */
@@ -1711,7 +1712,7 @@ rloc_to_core(
     if (oldx && !gi.in_mklev && mtmp != u.ustuck) {
         if (nhv_seen_from)
             NHV_HOOK_AT("monster_teleport", oldx, oldy);
-        if (canspotmon(mtmp) && cansee(x, y))
+        if (canspotmon(mtmp))
             NHV_HOOK_AT("monster_teleport", x, y);
     }
     if (domsg && (canspotmon(mtmp) || appearmsg || mtmp == u.ustuck)) {
