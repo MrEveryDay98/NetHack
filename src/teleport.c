@@ -1655,9 +1655,16 @@ rloc_to_core(
     boolean appearmsg = (mtmp->mstrategy & STRAT_APPEARMSG) != 0;
     boolean domsg = !gi.in_mklev && (vanishmsg || appearmsg) && !preventmsg;
     boolean telemsg = FALSE;
+    /* (VoxHack: a monster seen teleporting - the effect where it was and
+       where it goes; not one being placed as a level is made or arriving
+       from another) */
+    boolean nhv_seen_from = FALSE;
 
     if (x == mtmp->mx && y == mtmp->my && m_at(x, y) == mtmp)
         return; /* that was easy */
+
+    if (oldx && !gi.in_mklev && canspotmon(mtmp) && cansee(oldx, oldy))
+        nhv_seen_from = TRUE;
 
     if (oldx) { /* "pick up" monster */
         if (domsg && canspotmon(mtmp)) {
@@ -1701,6 +1708,12 @@ rloc_to_core(
     maybe_unhide_at(x, y);
     newsym(x, y);      /* update new location */
     set_apparxy(mtmp); /* orient monster */
+    if (oldx && !gi.in_mklev && mtmp != u.ustuck) {
+        if (nhv_seen_from)
+            NHV_HOOK_AT("monster_teleport", oldx, oldy);
+        if (canspotmon(mtmp) && cansee(x, y))
+            NHV_HOOK_AT("monster_teleport", x, y);
+    }
     if (domsg && (canspotmon(mtmp) || appearmsg || mtmp == u.ustuck)) {
         int du = distu(x, y), olddu;
         const char *next = (du <= 2) ? " next to you" : 0, /* next2u() */
