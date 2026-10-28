@@ -1910,6 +1910,12 @@ swim_move_danger(coordxy x, coordxy y)
 
     if (Underwater && (is_pool(x,y) || IS_WATERWALL(newtyp)))
         return FALSE;
+#ifdef NHV_FREEMOVE
+    /* (VoxHack: the Plane of Water's body walks where it will - whether it's
+       in the water there is its 3D world's: nhv_water_air) */
+    if (nhv_freemove && nhv_walking && Is_waterlevel(&u.uz))
+        return FALSE;
+#endif
 
     if ((newtyp != u_simple_floortyp(u.ux, u.uy))
         && !Stunned && !Confusion && levl[x][y].seenv
@@ -2399,6 +2405,11 @@ water_turbulence(coordxy *x, coordxy *y)
         int wtcap;
         int wtmod = (Swimming ? MOD_ENCUMBER : SLT_ENCUMBER);
 
+#ifdef NHV_FREEMOVE
+        /* (VoxHack: the Plane of Water's current doesn't turn a step the
+           body walked - it would put the hero where the body isn't) */
+        if (!(nhv_freemove && nhv_walking && Is_waterlevel(&u.uz)))
+#endif
         water_friction();
         if (!u.dx && !u.dy) {
             nomul(0);

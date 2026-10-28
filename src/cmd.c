@@ -1819,6 +1819,8 @@ struct ext_func_tab extcmdlist[] = {
               donhvpit, IFBURIED | GENERALCMD | NOFUZZERCMD, NULL },
     { '\0',   "nhvgod", "(NetHack Voxel) invulnerable or not (wizard mode)",
               donhvgod, IFBURIED | GENERALCMD | WIZMODECMD | NOFUZZERCMD, NULL },
+    { '\0',   "nhvwater", "(NetHack Voxel) in water or in an air bubble",
+              donhvwater, IFBURIED | GENERALCMD | NOFUZZERCMD, NULL },
     { '\0',   "nhvtrap", "(NetHack Voxel) step on the trap here",
               donhvtrap, IFBURIED | NOFUZZERCMD, NULL },
     { '\0',   "nhvpass", "(NetHack Voxel) walk past someone",

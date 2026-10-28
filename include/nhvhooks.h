@@ -50,6 +50,11 @@ extern int donhvpit(void);
 /* wizard mode's invulnerability (VoxHack's noclip): no damage, no death */
 extern boolean nhv_godmode;
 extern int donhvgod(void);
+/* the Plane of Water as the host's 3D world has it (nhv_free.c) */
+extern boolean nhv_water_air;
+extern int donhvwater(void);
+extern void nhv_water_apply(void);
+extern void nhv_water_step(coordxy, coordxy);
 /* the hero's body is walking from square to square (#nhvmove, #nhvpass):
    entering a trap's square doesn't set it off - the host says when the
    body touches the trap (#nhvtrap); a pit, a real hole, still does */

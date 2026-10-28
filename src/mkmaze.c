@@ -1625,7 +1625,13 @@ movebubbles(void)
                             mon->mx = mon->my = 0;
                             mon->mstate |= MON_BUBBLEMOVE;
                         }
-                        if (!u.uswallow && u_at(x, y)) {
+                        if (!u.uswallow && u_at(x, y)
+#ifdef NHV_FREEMOVE
+                            /* (VoxHack: its drift carries the hero's body
+                               instead, and the hero walks with it) */
+                            && !nhv_freemove
+#endif
+                            ) {
                             cons = (struct container *) alloc(sizeof *cons);
                             cons->x = x;
                             cons->y = y;
@@ -1687,6 +1693,11 @@ movebubbles(void)
     /* put attached ball&chain back */
     if (Is_waterlevel(&u.uz) && Punished)
         lift_covet_and_placebc(bcpin);
+#ifdef NHV_FREEMOVE
+    /* (VoxHack: the hero's square as its body is - in a bubble's sphere or
+       not - however the bubbles moved: nhv_free.c) */
+    nhv_water_apply();
+#endif
     gv.vision_full_recalc = 1;
 }
 
