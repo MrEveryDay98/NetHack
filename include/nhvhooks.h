@@ -96,6 +96,26 @@ extern int nhv_missile_hits_hero(struct monst *, struct obj *, coordxy,
                                  coordxy);
 extern boolean nhv_missile_hits_mon(struct monst *, struct obj *, int);
 extern void nhv_missile_lands(struct obj *, coordxy, coordxy);
+/* rolling boulders (trap.c's launch_obj / nhv_free.c): one a rolling
+   boulder trap set rolling is handed to the host, which rolls it through
+   its 3D world - a square at a time, NetHack's own rules for each square
+   it rolls into (nhv_roll_step) - and says when it reaches the hero's
+   body (nhv_roll_hits_you): it can be dodged */
+struct nhv_roll {
+    unsigned pid;
+    struct obj *obj;     /* rolling (a free object); 0: the slot's free */
+    int dist, dx, dy, tile;
+    coordxy x, y;        /* the square it's in */
+    coordxy x2, y2;      /* where it stops, unless something stops it first */
+    boolean fresh;       /* not yet reported to the host */
+};
+extern boolean nhv_roll_launch(struct obj *, int, coordxy, coordxy, coordxy,
+                               coordxy, int, int, int);
+extern int nhv_roll_step(struct nhv_roll *, int *, int *);
+extern int nhv_roll_hits_you(struct nhv_roll *);
+extern void nhv_finish_rolls(void);
+extern int donhvbroll(void);
+extern int donhvbhit(void);
 /* rays (zap.c / nhv_free.c) */
 extern void nhv_ray_launch(int, int, coordxy, coordxy, int, int, int, boolean,
                            boolean, boolean, unsigned);

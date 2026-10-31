@@ -3271,6 +3271,206 @@ launch_in_progress(void)
     return FALSE;
 }
 
+#ifdef NHV_FREEMOVE
+/* (a rolling boulder done: put where it stopped, or gone - used up) */
+static int
+nhv_roll_done(struct nhv_roll *r, boolean used_up, int *ox, int *oy)
+{
+    if (!used_up && r->obj) {
+        r->obj->otrapped = 0;
+        place_object(r->obj, r->x2, r->y2);
+        newsym(r->x2, r->y2);
+        *ox = r->x2, *oy = r->y2;
+    } else {
+        *ox = r->x, *oy = r->y;
+    }
+    r->obj = 0;
+    return used_up ? 2 : 0;
+}
+
+/* A rolling boulder handed to the host (launch_obj) rolls into the next
+   square: what launch_obj's loop does there - a monster it hits or that
+   catches it, a trap, a door it breaks, another boulder it sets rolling,
+   the wall or bars it stops at - but not the hero, whose body the host
+   says it reaches (nhv_roll_hits_you). 1: rolling on, from <*ox,*oy>; 0:
+   it stopped there (placed); 2: it's gone there (fell in, used up...). */
+int
+nhv_roll_step(struct nhv_roll *r, int *ox, int *oy)
+{
+    struct monst *mtmp;
+    struct obj *otmp2, *singleobj = r->obj;
+    struct trap *t;
+    coordxy x, y;
+    int dx = r->dx, dy = r->dy;
+    boolean used_up = FALSE;
+
+    if (r->dist-- <= 0 || !singleobj)
+        return nhv_roll_done(r, !singleobj, ox, oy);
+    if (!isok(r->x + dx, r->y + dy)) {
+        r->x2 = r->x, r->y2 = r->y;
+        return nhv_roll_done(r, FALSE, ox, oy);
+    }
+    x = gb.bhitpos.x = (r->x += dx);
+    y = gb.bhitpos.y = (r->y += dy);
+
+    if ((mtmp = m_at(x, y)) != 0) {
+        if (throws_rocks(mtmp->data) && rn2(3)) {
+            if (cansee(x, y))
+                pline_mon(mtmp, "%s snatches the boulder.", Monnam(mtmp));
+            singleobj->otrapped = 0;
+            (void) mpickobj(mtmp, singleobj);
+            r->obj = 0;
+            return nhv_roll_done(r, TRUE, ox, oy);
+        }
+        if (ohitmon(mtmp, singleobj, -1, FALSE)) {
+            r->obj = 0;
+            return nhv_roll_done(r, TRUE, ox, oy);
+        }
+    }
+    if (down_gate(x, y) != -1 && ship_object(singleobj, x, y, FALSE)) {
+        r->obj = 0;
+        return nhv_roll_done(r, TRUE, ox, oy);
+    }
+    if ((t = t_at(x, y)) != 0) {
+        int newlev = 0;
+        d_level dest;
+
+        switch (t->ttyp) {
+        case LANDMINE:
+            if (rn2(10) > 2) {
+                if (cansee(x, y))
+                    set_msg_xy(x, y);
+                pline("KAABLAMM!!!%s",
+                      cansee(x, y)
+                       ? "  The rolling boulder triggers a land mine."
+                       : "");
+                deltrap(t);
+                del_engr_at(x, y);
+                place_object(singleobj, x, y);
+                singleobj->otrapped = 0;
+                fracture_rock(singleobj);
+                (void) scatter(x, y, 4,
+                               MAY_DESTROY | MAY_HIT | MAY_FRACTURE
+                                   | VIS_EFFECTS,
+                               (struct obj *) 0);
+                if (cansee(x, y))
+                    newsym(x, y);
+                r->obj = 0;
+                return nhv_roll_done(r, TRUE, ox, oy);
+            }
+            break;
+        case LEVEL_TELEP:
+            newlev = random_teleport_level();
+            if (newlev == depth(&u.uz))
+                break;
+            FALLTHROUGH;
+            /*FALLTHRU*/
+        case TELEP_TRAP:
+            if (cansee(x, y))
+                pline_xy(x, y, "Suddenly the rolling boulder disappears!");
+            else if (!Deaf)
+                You_hear("a rumbling stop abruptly.");
+            singleobj->otrapped = 0;
+            if (t->ttyp == TELEP_TRAP) {
+                (void) rloco(singleobj);
+            } else {
+                add_to_migration(singleobj);
+                get_level(&dest, newlev);
+                singleobj->ox = dest.dnum;
+                singleobj->oy = dest.dlevel;
+                singleobj->owornmask = (long) MIGR_RANDOM;
+            }
+            seetrap(t);
+            r->obj = 0;
+            return nhv_roll_done(r, TRUE, ox, oy);
+        case PIT:
+        case SPIKED_PIT:
+        case HOLE:
+        case TRAPDOOR:
+            /* (stops here, in it or not) */
+            r->x2 = x, r->y2 = y;
+            if (flooreffects(singleobj, x, y, "fall")) {
+                r->obj = 0;
+                return nhv_roll_done(r, TRUE, ox, oy);
+            }
+            return nhv_roll_done(r, FALSE, ox, oy);
+        default:
+            break;
+        }
+    }
+    if (flooreffects(singleobj, x, y, "fall")) {
+        r->obj = 0;
+        return nhv_roll_done(r, TRUE, ox, oy);
+    }
+    if ((otmp2 = sobj_at(BOULDER, x, y)) != 0) {
+        const char *bmsg = " as one boulder sets another in motion";
+        coordxy fx = x + dx, fy = y + dy;
+
+        if (!isok(fx, fy) || !r->dist || IS_OBSTRUCTED(levl[fx][fy].typ))
+            bmsg = " as one boulder hits another";
+        Soundeffect(se_loud_crash, 80);
+        You_hear("a loud crash%s!", cansee(x, y) ? bmsg : "");
+        obj_extract_self(otmp2);
+        /* (the other one rolls on from here; this one stays) */
+        otmp2->otrapped = singleobj->otrapped;
+        singleobj->otrapped = 0;
+        place_object(singleobj, x, y);
+        newsym(x, y);
+        r->obj = singleobj = otmp2; /* (a boulder too: looks the same) */
+        wake_nearto(x, y, 10 * 10);
+    }
+    if (closed_door(x, y)) {
+        if (cansee(x, y)) {
+            set_msg_xy(x, y);
+            pline_The("boulder crashes through a door.");
+        }
+        levl[x][y].doormask = D_BROKEN;
+        if (r->dist)
+            recalc_block_point(x, y);
+        newsym(x, y);
+    }
+    /* about to hit something: it stops here */
+    if (r->dist > 0 && isok(x + dx, y + dy)) {
+        coordxy fx = x + dx, fy = y + dy;
+        uchar typ = levl[fx][fy].typ;
+
+        if (typ == IRONBARS) {
+            r->x2 = x, r->y2 = y;
+            if (hits_bars(&r->obj, x, y, fx, fy, !rn2(20), 0))
+                return nhv_roll_done(r, !r->obj, ox, oy);
+        } else if (IS_STWALL(typ) || IS_TREE(typ)) {
+            r->x2 = x, r->y2 = y;
+            if (!Deaf)
+                pline("Thump!");
+            wake_nearto(x, y, 16);
+            return nhv_roll_done(r, FALSE, ox, oy);
+        }
+    }
+    if (r->dist <= 0)
+        return nhv_roll_done(r, used_up, ox, oy);
+    *ox = x, *oy = y;
+    return 1;
+}
+
+/* The host's rolling boulder reached the hero's body: launch_obj's roll
+   to hit. 1 hit, 0 missed (it rolls on either way), 2 it's gone. */
+int
+nhv_roll_hits_you(struct nhv_roll *r)
+{
+    int dam, hit;
+
+    if (!r->obj)
+        return 2;
+    dam = dmgval(r->obj, &gy.youmonst);
+    if (gm.multi)
+        nomul(0);
+    hit = thitu(9 + r->obj->spe, Maybe_Half_Phys(dam), &r->obj, (char *) 0);
+    if (hit)
+        stop_occupation();
+    return !r->obj ? 2 : hit ? 1 : 0;
+}
+#endif /* NHV_FREEMOVE */
+
 void
 force_launch_placement(void)
 {
@@ -3395,6 +3595,17 @@ launch_obj(
      * can't tell that yet.
      */
     launch_drop_spot(singleobj, x, y);
+
+#ifdef NHV_FREEMOVE
+    /* free movement: a rolling boulder rolls through the host's 3D world,
+       where it can be dodged (nhv_roll_step, nhv_roll_hits_you below) */
+    if (nhv_freemove && otyp == BOULDER && style == ROLL
+        && nhv_roll_launch(singleobj, nhv_tile, x, y, x2, y2, dx, dy, dist)) {
+        tmp_at(DISP_END, 0);
+        launch_drop_spot((struct obj *) 0, 0, 0);
+        return 1;
+    }
+#endif
 
     /* Set the object in motion */
     while (dist-- > 0 && !used_up) {

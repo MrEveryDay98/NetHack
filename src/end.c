@@ -886,6 +886,10 @@ done_object_cleanup(void)
         place_object(gk.kickedobj, ox, oy);
         stackobj(gk.kickedobj), gk.kickedobj = 0;
     }
+#ifdef NHV_FREEMOVE
+    /* (a boulder still rolling: where it is) */
+    nhv_finish_rolls();
+#endif
     /* if Punished hero dies during level change or dies or quits while
        swallowed, uball and uchain will be in limbo; put them on floor
        so bones will have them and object list cleanup finds them */

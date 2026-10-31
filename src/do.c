@@ -1498,6 +1498,10 @@ goto_level(
     boolean do_fall_dmg = FALSE;
     schar prev_temperature = svl.level.flags.temperature;
 
+#ifdef NHV_FREEMOVE
+    /* (a boulder still rolling stops where it is: it stays on this level) */
+    nhv_finish_rolls();
+#endif
     if (dunlev(newlevel) > dunlevs_in_dungeon(newlevel))
         newlevel->dlevel = dunlevs_in_dungeon(newlevel);
     if (newdungeon) {
