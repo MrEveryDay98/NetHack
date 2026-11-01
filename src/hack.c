@@ -2769,6 +2769,9 @@ domove_core(void)
     int bc_control = 0;                 /* control for ball&chain */
     boolean cause_delay = FALSE,        /* dragging ball will skip a move */
             displaceu = FALSE;          /* involuntary swap */
+    /* VoxHack: a travel step (findtravelpath ends travel before its
+       last one: told as one all the same - below) */
+    boolean nhv_travelling = svc.context.travel;
 
     if (svc.context.travel) {
         if (!findtravelpath(TRAVP_TRAVEL))
@@ -3038,7 +3041,7 @@ domove_core(void)
 
     /* VoxHack: each square travel (_) takes you through, for the host to
        walk the body along after it (nhv_free.c) */
-    if (svc.context.travel && u.umoved)
+    if (nhv_travelling && u.umoved)
         nhv_travel_event(u.ux, u.uy);
 
     runmode_delay_output();
