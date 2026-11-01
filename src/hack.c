@@ -3036,6 +3036,11 @@ domove_core(void)
         gn.nomovemsg = "";
     }
 
+    /* VoxHack: each square travel (_) takes you through, for the host to
+       walk the body along after it (nhv_free.c) */
+    if (svc.context.travel && u.umoved)
+        nhv_travel_event(u.ux, u.uy);
+
     runmode_delay_output();
 }
 

@@ -148,6 +148,8 @@ extern void nhv_roll_event(int, int, int, int, int, int);
 /* an explosion at <x,y> of a type (EXPL_FIERY...) the hero can see */
 extern void nhv_explode_event(int, int, int);
 extern void nhv_shield_event(int, int);
+/* a square travel (_) moved the hero into, in order */
+extern void nhv_travel_event(int, int);
 extern coordxy nhv_beam_x, nhv_beam_y; /* last square zap_dig reached */
 /* aiming: #nhvaim dx dy (thousandths) gives the exact line the host's
    crosshair points along; the next command's thrown objects and beams
