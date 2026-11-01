@@ -1121,6 +1121,10 @@ shieldeff(coordxy x, coordxy y)
     if (!flags.sparkle)
         return;
     if (cansee(x, y)) { /* Don't see anything if can't see the location */
+#ifdef NHV_FREEMOVE
+        /* the host plays the sparkle there too (its own frames) */
+        nhv_shield_event(x, y);
+#endif
         for (i = 0; i < SHIELD_COUNT; i++) {
             show_glyph(x, y, cmap_to_glyph(shield_static[i]));
             flush_screen(1); /* make sure the glyph shows up */
