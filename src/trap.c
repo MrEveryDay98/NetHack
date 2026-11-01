@@ -4005,17 +4005,7 @@ mintrap(struct monst *mtmp, unsigned mintrapflags)
             seetrap(trap);
         }
 
-        /* VoxHack: with free movement a monster climbs out of a pit about
-           as soon as the hero would (a few moves, not 40) - time there
-           only passes as you move, and one left at the bottom for 40 of
-           its moves looks stuck */
-        int escape_odds = 40;
-
-#ifdef NHV_FREEMOVE
-        if (nhv_freemove && is_pit(trap->ttyp))
-            escape_odds = 6;
-#endif
-        if (!rn2(escape_odds) || (is_pit(trap->ttyp) && m_easy_escape_pit(mtmp))) {
+        if (!rn2(40) || (is_pit(trap->ttyp) && m_easy_escape_pit(mtmp))) {
             if (sobj_at(BOULDER, mtmp->mx, mtmp->my)
                 && is_pit(trap->ttyp)) {
                 if (!rn2(2)) {
