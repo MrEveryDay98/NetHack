@@ -70,6 +70,7 @@ extern void nhv_helpless_turn(void);
 /* a counted search or wait (20s) waits for the host's clock before each
    turn of it; FALSE: stopped (nhv_win.c) */
 extern boolean nhv_repeat_turn(void);
+extern boolean nhv_travel_turn(void);
 extern boolean nhv_timed_occupation(void);
 extern int donhvattack(void);
 /* #nhvjump x y: jump there (apply.c's jump, at that square instead of

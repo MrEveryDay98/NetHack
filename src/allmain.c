@@ -531,6 +531,16 @@ moveloop_core(void)
             return;
         }
         if (svc.context.mv) {
+#ifdef NHV_FREEMOVE
+            /* VoxHack: travel takes its steps one at a time, each when the
+               host has walked the body there and its turn has come; Esc
+               stops it */
+            if (nhv_freemove && svc.context.travel && !nhv_travel_turn()) {
+                nomul(0);
+                svc.context.move = 0;
+                return;
+            }
+#endif
             if (gm.multi < COLNO && !--gm.multi)
                 end_running(TRUE);
             domove();
