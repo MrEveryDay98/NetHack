@@ -3888,8 +3888,10 @@ bhit(
         tmp_at(DISP_FLASH, obj_to_glyph(obj, rn2_on_display_rng));
 
 #ifdef NHV_FREEMOVE
-    /* aimed with the crosshair: along that line, not just ddx,ddy */
-    if (nhv_freemove && (weapon == ZAPPED_WAND || weapon == THROWN_WEAPON))
+    /* aimed with the crosshair: along that line, not just ddx,ddy (a
+       camera's flash too: at the monster under the crosshair) */
+    if (nhv_freemove && (weapon == ZAPPED_WAND || weapon == THROWN_WEAPON
+                         || weapon == FLASHED_LIGHT))
         nhv_npath = nhv_aim_path(gb.bhitpos.x, gb.bhitpos.y, ddx, ddy,
                                  nhv_pathx, nhv_pathy, 64);
 #endif
