@@ -459,7 +459,9 @@ calc_mattacku_vars(
     *foundyou = u_at(mtmp->mux, mtmp->muy);
     *youseeit = canseemon(mtmp);
 #ifdef NHV_FREEMOVE
-    if (nhv_freemove && !nhv_grid_mover(mtmp)) {
+    /* (a long worm moves square by square, but bites as every other
+       monster does: when its head's body reaches the hero's) */
+    if (nhv_freemove && (!nhv_grid_mover(mtmp) || mtmp->wormno)) {
         int reach = nhv_mon_in_reach(mtmp);
 
         if (reach >= 0)

@@ -73,6 +73,9 @@ extern boolean nhv_repeat_turn(void);
 extern boolean nhv_travel_turn(void);
 extern boolean nhv_timed_occupation(void);
 extern int donhvattack(void);
+/* the square #nhvattack hit the monster on (one of a long worm's: the
+   segment of its body the host's player hit, wherever it is), or -1 */
+extern coordxy nhv_hit_x, nhv_hit_y;
 /* #nhvjump x y: jump there (apply.c's jump, at that square instead of
    asking); nhv_jump_targets: where a jump could land now */
 extern coordxy nhv_jump_x, nhv_jump_y;

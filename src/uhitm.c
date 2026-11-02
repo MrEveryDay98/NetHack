@@ -524,6 +524,10 @@ do_attack(struct monst *mtmp)
        (hmonas) would all be skipped as "no longer in range" */
     if (nhv_freemove && m_at(gb.bhitpos.x, gb.bhitpos.y) != mtmp)
         gb.bhitpos.x = mtmp->mx, gb.bhitpos.y = mtmp->my;
+    /* (the very square hit, if the host says: a long worm's segment) */
+    if (nhv_freemove && isok(nhv_hit_x, nhv_hit_y)
+        && m_at(nhv_hit_x, nhv_hit_y) == mtmp)
+        gb.bhitpos.x = nhv_hit_x, gb.bhitpos.y = nhv_hit_y;
 #endif
     gn.notonhead = (gb.bhitpos.x != mtmp->mx || gb.bhitpos.y != mtmp->my);
     if (attack_checks(mtmp, uwep))

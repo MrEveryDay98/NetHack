@@ -541,7 +541,8 @@ distfleeck(
                 <= (BOLT_LIM * BOLT_LIM));
     *nearby = *inrange && monnear(mtmp, mtmp->mux, mtmp->muy);
 #ifdef NHV_FREEMOVE
-    if (nhv_freemove && !nhv_grid_mover(mtmp)) {
+    /* (a long worm too: see mhitu.c) */
+    if (nhv_freemove && (!nhv_grid_mover(mtmp) || mtmp->wormno)) {
         int reach = nhv_mon_in_reach(mtmp);
 
         if (reach >= 0)
